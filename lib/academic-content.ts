@@ -10,6 +10,9 @@ export type SimulatorItem = {
 };
 
 export type ResourceItem = {
+  url?: any;
+  file?: any;
+  pdf?: any;
   id: string;
   title: string;
   description: string;
