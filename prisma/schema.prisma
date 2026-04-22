@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  TEACHER
+  STUDENT
+  ASSISTANT
+}
+
+enum CourseLevel {
+  BASIC
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum ResourceType {
+  VIDEO
+  PDF
+}
+
+enum ResourceStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id          String       @id @default(cuid())
+  name        String
+  email       String       @unique
+  role        UserRole     @default(STUDENT)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  resources   Resource[]   @relation("ResourceAuthor")
+  enrollments Enrollment[]
+}
+
+model Course {
+  id            String       @id @default(cuid())
+  title         String
+  slug          String       @unique
+  description   String
+  level         CourseLevel  @default(BASIC)
+  isPublished   Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  topics        Topic[]
+  resources     Resource[]
+  enrollments   Enrollment[]
+  announcements Announcement[]
+}
+
+model Topic {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String
+  description String
+  position    Int         @default(0)
+  courseId    String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  course      Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  resources   Resource[]
+  simulations Simulation[]
+
+  @@unique([courseId, slug])
+}
+
+model Resource {
+  id             String         @id @default(cuid())
+  title          String
+  slug           String         @unique
+  description    String
+  type           ResourceType
+  status         ResourceStatus @default(DRAFT)
+  storageUrl     String
+  thumbnailUrl   String?
+  durationMinutes Int?
+  fileSizeMb     Float?
+  publishedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  authorId       String
+  courseId       String
+  topicId        String
+  author         User           @relation("ResourceAuthor", fields: [authorId], references: [id])
+  course         Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  topic          Topic          @relation(fields: [topicId], references: [id], onDelete: Cascade)
+}
+
+model Simulation {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String
+  topicId     String
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+}
+
+model Enrollment {
+  id         String   @id @default(cuid())
+  userId     String
+  courseId   String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  body        String
+  courseId    String
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
