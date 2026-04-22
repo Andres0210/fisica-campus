@@ -7,10 +7,10 @@ import { BookOpen, FileStack, FolderKanban, Video } from "lucide-react";
 export default async function AdminPage() {
   const { courses, topics, resources, source } = await getAdminResourceDashboard();
 
-  const publishedResources = resources.filter((resource) => resource.status === "PUBLISHED");
-  const draftResources = resources.filter((resource) => resource.status === "DRAFT");
-  const videoCount = resources.filter((resource) => resource.type === "VIDEO").length;
-  const pdfCount = resources.filter((resource) => resource.type === "PDF").length;
+  const publishedResources = resources.filter((resource: any) => resource.status === "PUBLISHED");
+  const draftResources = resources.filter((resource: any) => resource.status === "DRAFT");
+  const videoCount = resources.filter((resource: any) => resource.type === "VIDEO").length;
+  const pdfCount = resources.filter((resource: any) => resource.type === "PDF").length;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
