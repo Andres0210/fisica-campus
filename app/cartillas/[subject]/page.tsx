@@ -4,8 +4,6 @@ import Navbar from "@/components/Navbar";
 import { useParams, notFound } from "next/navigation";
 import { getResourcesByType, getSubject } from "@/lib/academic-content";
 import { motion } from "framer-motion";
-import ResourceGrid from "@/components/site/ResourceGrid";
-import Link from "next/link";
 import BookletCard from "@/components/cartillas/BookletCard";
 
 export default function SubjectBookletsPage() {

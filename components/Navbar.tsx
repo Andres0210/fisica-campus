@@ -84,7 +84,6 @@ export default function Navbar() {
       `}
     >
       <div className="section-shell flex items-center justify-between rounded-full px-5 py-3 bg-background/80 backdrop-blur-md border border-border/60">
-
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary">
@@ -148,7 +147,12 @@ export default function Navbar() {
 /* NAV LINK COMPONENT */
 /* ========================= */
 
-function NavLink({ item, pathname }: any) {
+type NavLinkProps = {
+  item: NavItem;
+  pathname: string;
+};
+
+function NavLink({ item, pathname }: NavLinkProps) {
   const [open, setOpen] = useState(false);
 
   const isActive =
