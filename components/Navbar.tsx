@@ -1,6 +1,7 @@
 "use client";
 
-import { Atom, Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -83,16 +84,23 @@ export default function Navbar() {
         ${visible ? "translate-y-0" : "-translate-y-full"}
       `}
     >
-      <div className="section-shell flex items-center justify-between rounded-full px-5 py-3 bg-background/80 backdrop-blur-md border border-border/60">
+      <div className="section-shell flex items-center justify-between rounded-full px-5 py-3 bg-background/85 backdrop-blur-md border border-border/60 shadow-[0_12px_30px_rgba(56,88,17,0.08)]">
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary">
-            <Atom className="h-5 w-5" />
+          <span className="flex items-center justify-center rounded-[1rem] border border-black/10 bg-black px-3 py-2 shadow-sm">
+            <Image
+              src="/brand/areandina-logo.png"
+              alt="Areandina"
+              width={140}
+              height={38}
+              className="h-auto w-[108px] md:w-[130px]"
+              priority
+            />
           </span>
           <div className="hidden md:block">
-            <p className="text-sm font-semibold text-foreground">FisicaLab</p>
+            <p className="text-sm font-semibold text-foreground">FisicaLab Areandina</p>
             <p className="font-mono text-[0.68rem] uppercase tracking-[0.24em] text-muted-foreground">
-              Recursos y simulaciones
+              Recursos y simulaciones institucionales
             </p>
           </div>
         </Link>

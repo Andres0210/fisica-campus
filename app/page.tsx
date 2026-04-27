@@ -1,8 +1,9 @@
 "use client";
+import AuthorCard from "@/components/authors/AuthorCard";
 import Navbar from "@/components/Navbar";
+import { authors, subjects } from "@/lib/academic-content";
 import Link from "next/link";
 import { Atom, PlayCircle, BookOpen, Waves } from "lucide-react";
-import { subjects } from "@/lib/academic-content";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
@@ -42,9 +43,9 @@ export default function Home() {
         <motion.div
           animate={{
             background: [
-              "radial-gradient(circle at 20% 20%, rgba(99,102,241,0.25), transparent)",
-              "radial-gradient(circle at 80% 80%, rgba(168,85,247,0.25), transparent)",
-              "radial-gradient(circle at 50% 30%, rgba(59,130,246,0.25), transparent)",
+              "radial-gradient(circle at 20% 20%, rgba(127,181,54,0.28), transparent)",
+              "radial-gradient(circle at 80% 80%, rgba(245,152,47,0.22), transparent)",
+              "radial-gradient(circle at 50% 30%, rgba(230,0,126,0.16), transparent)",
             ],
           }}
           transition={{ duration: 12, repeat: Infinity }}
@@ -222,6 +223,38 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* AUTORES EN HOME */}
+      <section className="mx-auto max-w-6xl px-6 py-16">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.18em] text-primary">
+              Equipo academico
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold">
+              Profesores y autores que acompanan la experiencia
+            </h2>
+            <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">
+              El contenido no aparece aislado: detras de cada explicacion,
+              recurso o simulacion hay perfiles con enfoque docente, criterio
+              conceptual y experiencia real en Fisica.
+            </p>
+          </div>
+
+          <Link
+            href="/autores"
+            className="inline-flex rounded-full border border-border px-5 py-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            Ver todos los autores
+          </Link>
+        </div>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {authors.map((author) => (
+            <AuthorCard key={author.id} item={author} />
+          ))}
         </div>
       </section>
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import SiteFooter from "@/components/SiteFooter";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}
+          <SiteFooter />
         </ThemeProvider>
       </body>
     </html>
