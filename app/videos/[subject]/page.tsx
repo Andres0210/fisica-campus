@@ -1,68 +1,48 @@
-"use client";
-
 import Navbar from "@/components/Navbar";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { getResourcesByType, getSubject } from "@/lib/academic-content";
-import { useParams, notFound } from "next/navigation";
-import { PlayCircle } from "lucide-react";
+import PublicResourceGrid from "@/components/site/PublicResourceGrid";
+import SubjectLinks from "@/components/site/SubjectLinks";
+import { getSubject, subjects } from "@/lib/academic-content";
+import { getTeacherSession } from "@/lib/auth";
+import { getPublicResourceCatalog } from "@/lib/education-service";
 
-export default function SubjectVideosPage() {
-  const params = useParams();
-  const subject = params.subject as string;
+type SubjectVideosPageProps = {
+  params: Promise<{
+    subject: string;
+  }>;
+};
 
-  const current = getSubject(subject);
-  if (!current) return notFound();
+export default async function SubjectVideosPage({ params }: SubjectVideosPageProps) {
+  const { subject } = await params;
+  const subjectInfo = getSubject(subject);
 
-  const items = getResourcesByType("videos", current.slug);
+  const [catalog, teacherSession] = await Promise.all([
+    getPublicResourceCatalog("videos", subject),
+    getTeacherSession(),
+  ]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />
 
-      {/* HERO */}
-      <section className="px-6 pt-20 pb-14 text-center">
-        <h1 className="text-4xl font-bold md:text-5xl">
-          Videos de {current.title}
-        </h1>
+      <section className="section-shell pb-10 pt-8">
+        <section className="glass-panel rounded-[2rem] p-6 md:p-8">
+          <p className="eyebrow">Reels De Fisica</p>
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
+            {subjectInfo?.title ?? "Asignatura"} · videos publicados
+          </h1>
+          <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
+            Vista filtrada por asignatura para que el estudiante encuentre unicamente los videos publicados en ese
+            curso y la profesora pueda revisarlos en contexto cuando inicia sesion.
+          </p>
+        </section>
 
-        <p className="mt-5 max-w-2xl mx-auto text-muted-foreground">
-          Refuerza conceptos clave antes de practicar.
-        </p>
-
-        <p className="mt-3 text-sm text-muted-foreground">
-          {items.length} videos disponibles
-        </p>
-      </section>
-
-      {/* GRID */}
-      <section className="mx-auto max-w-6xl px-6 pb-20">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((video: any, index: number) => (
-            <motion.div
-              key={`${video.id}-${index}`}
-              whileHover={{ y: -5 }}
-              className="group rounded-2xl border border-border/60 overflow-hidden hover:shadow-xl transition"
-            >
-              <div className="h-40 bg-muted flex items-center justify-center">
-                <PlayCircle className="h-10 w-10 text-primary group-hover:scale-110 transition" />
-              </div>
-
-              <div className="p-4">
-                <h3 className="font-semibold">
-                  {video.title}
-                </h3>
-
-                <Link
-                  href={`/videos/watch/${video.id}`}
-                  className="mt-3 inline-block text-sm text-primary"
-                >
-                  Ver video →
-                </Link>
-              </div>
-            </motion.div>
-          ))}
+        <div className="mt-8">
+          <PublicResourceGrid items={catalog.items} kind="videos" teacherMode={Boolean(teacherSession)} />
         </div>
+
+        <section className="mt-10">
+          <SubjectLinks subjects={subjects} basePath="/videos" title="Cambiar de asignatura" />
+        </section>
       </section>
     </main>
   );

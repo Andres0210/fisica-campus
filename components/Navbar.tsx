@@ -43,6 +43,9 @@ const navItems: NavItem[] = [
   {
     label: "Libros o Cartillas",
     children: [
+      { label: "Todos los libros", href: "/libros" },
+      { label: "Libros Fisica II", href: "/libros/fisica-2" },
+      { label: "Libros Fisica III", href: "/libros/fisica-3" },
       { label: "Todas las cartillas", href: "/cartillas" },
       { label: "Cartillas Fisica II", href: "/cartillas/fisica-2" },
       { label: "Cartillas Fisica III", href: "/cartillas/fisica-3" },

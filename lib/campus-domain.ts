@@ -15,6 +15,13 @@ export const RESOURCE_TYPE = {
   PDF: "PDF",
 } as const;
 
+export const RESOURCE_CATEGORY = {
+  VIDEO: "VIDEO",
+  DOCUMENT: "DOCUMENT",
+  BOOK: "BOOK",
+  BOOKLET: "BOOKLET",
+} as const;
+
 export const RESOURCE_STATUS = {
   DRAFT: "DRAFT",
   PUBLISHED: "PUBLISHED",
@@ -24,4 +31,5 @@ export const RESOURCE_STATUS = {
 export type UserRole = (typeof USER_ROLE)[keyof typeof USER_ROLE];
 export type CourseLevel = (typeof COURSE_LEVEL)[keyof typeof COURSE_LEVEL];
 export type ResourceType = (typeof RESOURCE_TYPE)[keyof typeof RESOURCE_TYPE];
+export type ResourceCategory = (typeof RESOURCE_CATEGORY)[keyof typeof RESOURCE_CATEGORY];
 export type ResourceStatus = (typeof RESOURCE_STATUS)[keyof typeof RESOURCE_STATUS];

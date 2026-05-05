@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { apiClient } from "@/lib/api-client";
 import { getCampusDashboardSeedData } from "@/lib/campus-data";
 
 export type StudentCourseCard = {
@@ -47,9 +47,56 @@ export type StudentSimulationCard = {
   isPublished: boolean;
 };
 
-function toIsoDate(value: Date | null) {
-  return value ? value.toISOString().slice(0, 10) : null;
-}
+type ApiCourse = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  level: string;
+  isPublished: boolean;
+  _count?: {
+    topics: number;
+    resources: number;
+  };
+};
+
+type ApiTopic = {
+  id: string;
+  title: string;
+  description: string;
+  position: number;
+  courseId: string;
+  course: {
+    slug: string;
+    title: string;
+  };
+  _count?: {
+    resources: number;
+  };
+};
+
+type ApiResource = {
+  id: string;
+  title: string;
+  description: string;
+  type: "VIDEO" | "PDF";
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  publishedAt: string | null;
+  durationMinutes: number | null;
+  fileSizeMb: number | null;
+  storageUrl: string;
+  courseId: string;
+  topicId: string;
+  course: {
+    title: string;
+    slug: string;
+  };
+  topic: {
+    title: string;
+    description?: string;
+    position?: number;
+  };
+};
 
 async function getStudentSeedDashboard() {
   const seed = await getCampusDashboardSeedData();
@@ -102,16 +149,7 @@ async function getStudentSeedDashboard() {
       storageUrl: resource.storageUrl,
     }));
 
-  const simulations: StudentSimulationCard[] = [
-    {
-      id: "sim-seed-ondas",
-      title: "Laboratorio virtual de ondas",
-      description: "Explora amplitud, frecuencia y velocidad de propagacion en tiempo real.",
-      topicTitle: "Ondas mecanicas",
-      courseTitle: "Fisica General II",
-      isPublished: true,
-    },
-  ];
+  const simulations: StudentSimulationCard[] = [];
 
   return {
     source: "seed" as const,
@@ -124,69 +162,51 @@ async function getStudentSeedDashboard() {
 
 export async function getStudentDashboardData() {
   try {
-    const [courses, topics, resources, simulations] = await Promise.all([
-      prisma.course.findMany({
-        where: { isPublished: true },
-        orderBy: { title: "asc" },
-        include: {
-          topics: true,
-          resources: true,
-        },
-      }),
-      prisma.topic.findMany({
-        orderBy: [{ courseId: "asc" }, { position: "asc" }],
-        include: {
-          course: true,
-          resources: true,
-        },
-      }),
-      prisma.resource.findMany({
-        where: { status: "PUBLISHED" },
-        orderBy: [{ publishedAt: "desc" }],
-        include: {
-          course: true,
-          topic: true,
-        },
-      }),
-      prisma.simulation.findMany({
-        orderBy: { createdAt: "desc" },
-        include: {
-          topic: {
-            include: {
-              course: true,
-            },
-          },
-        },
-      }),
+    const [courses, topics, resources] = await Promise.all([
+      apiClient.getCourses() as Promise<ApiCourse[]>,
+      apiClient.getTopics() as Promise<ApiTopic[]>,
+      apiClient.getResources({ publishedOnly: true }) as Promise<ApiResource[]>,
     ]);
 
-    if (courses.length === 0) {
+    const publishedCourses = courses.filter((course) => course.isPublished);
+
+    if (publishedCourses.length === 0) {
       return getStudentSeedDashboard();
     }
 
     return {
       source: "database" as const,
-      courses: courses.map((course) => ({
-        id: course.id,
-        slug: course.slug,
-        title: course.title,
-        description: course.description,
-        level: course.level,
-        topicCount: course.topics.length,
-        resourceCount: course.resources.length,
-        publishedCount: course.resources.filter((resource) => resource.status === "PUBLISHED").length,
-      })),
-      topics: topics.map((topic) => ({
-        id: topic.id,
-        title: topic.title,
-        description: topic.description,
-        position: topic.position,
-        courseId: topic.courseId,
-        courseSlug: topic.course.slug,
-        courseTitle: topic.course.title,
-        videoCount: topic.resources.filter((resource) => resource.type === "VIDEO").length,
-        pdfCount: topic.resources.filter((resource) => resource.type === "PDF").length,
-      })),
+      courses: publishedCourses.map((course) => {
+        const courseResources = resources.filter((resource) => resource.courseId === course.id);
+
+        return {
+          id: course.id,
+          slug: course.slug,
+          title: course.title,
+          description: course.description,
+          level: course.level,
+          topicCount: topics.filter((topic) => topic.courseId === course.id).length,
+          resourceCount: courseResources.length,
+          publishedCount: courseResources.length,
+        };
+      }),
+      topics: topics
+        .filter((topic) => publishedCourses.some((course) => course.id === topic.courseId))
+        .map((topic) => {
+          const topicResources = resources.filter((resource) => resource.topicId === topic.id);
+
+          return {
+            id: topic.id,
+            title: topic.title,
+            description: topic.description,
+            position: topic.position,
+            courseId: topic.courseId,
+            courseSlug: topic.course.slug,
+            courseTitle: topic.course.title,
+            videoCount: topicResources.filter((resource) => resource.type === "VIDEO").length,
+            pdfCount: topicResources.filter((resource) => resource.type === "PDF").length,
+          };
+        }),
       resources: resources.map((resource) => ({
         id: resource.id,
         title: resource.title,
@@ -195,19 +215,12 @@ export async function getStudentDashboardData() {
         status: resource.status,
         topicTitle: resource.topic.title,
         courseTitle: resource.course.title,
-        publishedAt: toIsoDate(resource.publishedAt),
+        publishedAt: resource.publishedAt,
         durationMinutes: resource.durationMinutes,
         fileSizeMb: resource.fileSizeMb,
         storageUrl: resource.storageUrl,
       })),
-      simulations: simulations.map((simulation) => ({
-        id: simulation.id,
-        title: simulation.title,
-        description: simulation.description,
-        topicTitle: simulation.topic.title,
-        courseTitle: simulation.topic.course.title,
-        isPublished: simulation.isPublished,
-      })),
+      simulations: [] as StudentSimulationCard[],
     };
   } catch {
     return getStudentSeedDashboard();
@@ -216,27 +229,21 @@ export async function getStudentDashboardData() {
 
 export async function getStudentCourseDetail(courseSlug: string) {
   try {
-    const course = await prisma.course.findUnique({
-      where: { slug: courseSlug },
-      include: {
-        topics: {
-          orderBy: { position: "asc" },
-          include: {
-            resources: {
-              where: { status: "PUBLISHED" },
-              orderBy: [{ publishedAt: "desc" }],
-            },
-            simulations: {
-              orderBy: { createdAt: "desc" },
-            },
-          },
-        },
-      },
-    });
+    const [courses, topics, resources] = await Promise.all([
+      apiClient.getCourses() as Promise<ApiCourse[]>,
+      apiClient.getTopics() as Promise<ApiTopic[]>,
+      apiClient.getResources({ publishedOnly: true }) as Promise<ApiResource[]>,
+    ]);
+
+    const course = courses.find((item) => item.slug === courseSlug && item.isPublished);
 
     if (!course) {
       return null;
     }
+
+    const courseTopics = topics
+      .filter((topic) => topic.courseId === course.id)
+      .sort((a, b) => a.position - b.position);
 
     return {
       source: "database" as const,
@@ -247,27 +254,29 @@ export async function getStudentCourseDetail(courseSlug: string) {
         description: course.description,
         level: course.level,
       },
-      topics: course.topics.map((topic) => ({
+      topics: courseTopics.map((topic) => ({
         id: topic.id,
         title: topic.title,
         description: topic.description,
         position: topic.position,
-        resources: topic.resources.map((resource) => ({
-          id: resource.id,
-          title: resource.title,
-          description: resource.description,
-          type: resource.type,
-          publishedAt: toIsoDate(resource.publishedAt),
-          durationMinutes: resource.durationMinutes,
-          fileSizeMb: resource.fileSizeMb,
-          storageUrl: resource.storageUrl,
-        })),
-        simulations: topic.simulations.map((simulation) => ({
-          id: simulation.id,
-          title: simulation.title,
-          description: simulation.description,
-          isPublished: simulation.isPublished,
-        })),
+        resources: resources
+          .filter((resource) => resource.topicId === topic.id)
+          .map((resource) => ({
+            id: resource.id,
+            title: resource.title,
+            description: resource.description,
+            type: resource.type,
+            publishedAt: resource.publishedAt,
+            durationMinutes: resource.durationMinutes,
+            fileSizeMb: resource.fileSizeMb,
+            storageUrl: resource.storageUrl,
+          })),
+        simulations: [] as Array<{
+          id: string;
+          title: string;
+          description: string;
+          isPublished: boolean;
+        }>,
       })),
     };
   } catch {
@@ -306,14 +315,12 @@ export async function getStudentCourseDetail(courseSlug: string) {
               fileSizeMb: resource.fileSizeMb,
               storageUrl: resource.storageUrl,
             })),
-          simulations: seed.simulations
-            .filter((simulation) => simulation.topicTitle === topic.title)
-            .map((simulation) => ({
-              id: simulation.id,
-              title: simulation.title,
-              description: simulation.description,
-              isPublished: simulation.isPublished,
-            })),
+          simulations: [] as Array<{
+            id: string;
+            title: string;
+            description: string;
+            isPublished: boolean;
+          }>,
         })),
     };
   }

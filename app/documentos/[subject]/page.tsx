@@ -1,82 +1,47 @@
-"use client";
-
 import Navbar from "@/components/Navbar";
-import { motion } from "framer-motion";
-import { getResourcesByType, getSubject } from "@/lib/academic-content";
-import { notFound, useParams } from "next/navigation";
-import { FileText } from "lucide-react";
+import PublicResourceGrid from "@/components/site/PublicResourceGrid";
+import SubjectLinks from "@/components/site/SubjectLinks";
+import { getSubject, subjects } from "@/lib/academic-content";
+import { getTeacherSession } from "@/lib/auth";
+import { getPublicResourceCatalog } from "@/lib/education-service";
 
-/* ========================= */
-
-const container = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.1 },
-  },
+type SubjectDocumentsPageProps = {
+  params: Promise<{
+    subject: string;
+  }>;
 };
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
+export default async function SubjectDocumentsPage({ params }: SubjectDocumentsPageProps) {
+  const { subject } = await params;
+  const subjectInfo = getSubject(subject);
 
-/* ========================= */
-
-export default function SubjectDocumentsPage() {
-  const params = useParams();
-  const subject = params.subject as string;
-
-  const current = getSubject(subject);
-  if (!current) return notFound();
-
-  const items = getResourcesByType("documentos", current.slug);
+  const [catalog, teacherSession] = await Promise.all([
+    getPublicResourceCatalog("documentos", subject),
+    getTeacherSession(),
+  ]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />
 
-      {/* HERO */}
-      <section className="px-6 pt-24 pb-14 text-center">
-        <h1 className="text-4xl font-bold md:text-5xl">
-          Documentos de {current.title}
-        </h1>
+      <section className="section-shell pb-10 pt-8">
+        <section className="glass-panel rounded-[2rem] p-6 md:p-8">
+          <p className="eyebrow">Documentos</p>
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
+            {subjectInfo?.title ?? "Asignatura"} · biblioteca documental
+          </h1>
+          <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
+            Guia de lectura, talleres y anexos del curso organizados en una sola ruta publica.
+          </p>
+        </section>
 
-        <p className="mt-5 max-w-2xl mx-auto text-muted-foreground">
-          Material de estudio organizado para esta asignatura.
-        </p>
-      </section>
+        <div className="mt-8">
+          <PublicResourceGrid items={catalog.items} kind="documentos" teacherMode={Boolean(teacherSession)} />
+        </div>
 
-      {/* GRID */}
-      <section className="mx-auto max-w-6xl px-6 pb-20">
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {items.map((doc) => (
-            <motion.div
-              key={doc.id}
-              variants={item}
-              whileHover={{ y: -5 }}
-              className="rounded-2xl border border-border/60 p-5 hover:shadow-xl transition"
-            >
-              <FileText className="h-6 w-6 text-primary" />
-
-              <h3 className="mt-4 text-lg font-semibold">
-                {doc.title}
-              </h3>
-
-              <p className="mt-2 text-sm text-muted-foreground">
-                {doc.description}
-              </p>
-
-              <button className="mt-4 text-primary text-sm">
-                Abrir documento →
-              </button>
-            </motion.div>
-          ))}
-        </motion.div>
+        <section className="mt-10">
+          <SubjectLinks subjects={subjects} basePath="/documentos" title="Cambiar de asignatura" />
+        </section>
       </section>
     </main>
   );

@@ -1,8 +1,10 @@
 import AuthorCard from "@/components/authors/AuthorCard";
 import Navbar from "@/components/Navbar";
-import { authors } from "@/lib/academic-content";
+import { getAuthorsCatalog } from "@/lib/education-service";
 
-export default function AuthorsPage() {
+export default async function AuthorsPage() {
+  const { authors } = await getAuthorsCatalog();
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />

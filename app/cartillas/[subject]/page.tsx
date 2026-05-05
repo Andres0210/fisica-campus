@@ -1,58 +1,47 @@
-"use client";
-
 import Navbar from "@/components/Navbar";
-import { useParams, notFound } from "next/navigation";
-import { getResourcesByType, getSubject } from "@/lib/academic-content";
-import { motion } from "framer-motion";
-import BookletCard from "@/components/cartillas/BookletCard";
+import PublicResourceGrid from "@/components/site/PublicResourceGrid";
+import SubjectLinks from "@/components/site/SubjectLinks";
+import { getSubject, subjects } from "@/lib/academic-content";
+import { getTeacherSession } from "@/lib/auth";
+import { getPublicResourceCatalog } from "@/lib/education-service";
 
-export default function SubjectBookletsPage() {
-  const params = useParams();
-  const subject = params.subject as string;
+type SubjectBookletsPageProps = {
+  params: Promise<{
+    subject: string;
+  }>;
+};
 
-  const current = getSubject(subject);
-  if (!current) return notFound();
+export default async function SubjectBookletsPage({ params }: SubjectBookletsPageProps) {
+  const { subject } = await params;
+  const subjectInfo = getSubject(subject);
 
-  const items = getResourcesByType("cartillas", current.slug);
+  const [catalog, teacherSession] = await Promise.all([
+    getPublicResourceCatalog("cartillas", subject),
+    getTeacherSession(),
+  ]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />
 
-      {/* HERO */}
-      <section className="relative px-6 pt-24 pb-16 text-center overflow-hidden">
-        <motion.div
-          animate={{
-            background: [
-              "radial-gradient(circle at 10% 10%, rgba(99,102,241,0.2), transparent)",
-              "radial-gradient(circle at 90% 90%, rgba(168,85,247,0.2), transparent)",
-            ],
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="absolute inset-0 blur-3xl"
-        />
-
-        <div className="relative max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold md:text-5xl">{current.title}</h1>
-
-          <p className="mt-5 text-muted-foreground">
-            Cartillas diseñadas para dominar los conceptos clave de esta
-            asignatura.
+      <section className="section-shell pb-10 pt-8">
+        <section className="glass-panel rounded-[2rem] p-6 md:p-8">
+          <p className="eyebrow">Cartillas</p>
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
+            {subjectInfo?.title ?? "Asignatura"} · cartillas del curso
+          </h1>
+          <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
+            Material de estudio extendido para acompañar el progreso del estudiante por unidades.
           </p>
+        </section>
 
-          <p className="mt-4 text-sm text-muted-foreground">
-            {items.length} materiales disponibles
-          </p>
+        <div className="mt-8">
+          <PublicResourceGrid items={catalog.items} kind="cartillas" teacherMode={Boolean(teacherSession)} />
         </div>
-      </section>
 
-      {/* GRID */}
-      <section className="mx-auto max-w-6xl px-6 pb-20">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => (
-            <BookletCard key={item.id} item={item} />
-          ))}
-        </div>
+        <section className="mt-10">
+          <SubjectLinks subjects={subjects} basePath="/cartillas" title="Cambiar de asignatura" />
+        </section>
       </section>
     </main>
   );

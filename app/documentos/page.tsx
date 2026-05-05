@@ -1,108 +1,58 @@
-"use client";
-
 import Navbar from "@/components/Navbar";
-import Link from "next/link";
-import { motion } from "framer-motion";
+import PublicResourceGrid from "@/components/site/PublicResourceGrid";
+import SubjectLinks from "@/components/site/SubjectLinks";
+import { subjects } from "@/lib/academic-content";
+import { getTeacherSession } from "@/lib/auth";
+import { getPublicResourceCatalog } from "@/lib/education-service";
 import { FileText } from "lucide-react";
-import { getResourcesByType, subjects } from "@/lib/academic-content";
 
-/* ========================= */
-
-const container = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
-
-/* ========================= */
-
-export default function DocumentsPage() {
-  const items = getResourcesByType("documentos");
+export default async function DocumentsPage() {
+  const [catalog, teacherSession] = await Promise.all([
+    getPublicResourceCatalog("documentos"),
+    getTeacherSession(),
+  ]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />
 
-      {/* HERO tipo biblioteca */}
-      <section className="relative px-6 pt-24 pb-16 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-purple-500/10 blur-3xl" />
-
-        <div className="relative max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold">
-            Biblioteca de Física
-          </h1>
-
-          <p className="mt-5 text-muted-foreground">
-            Accede a guías, talleres y materiales organizados para estudiar mejor y más rápido.
-          </p>
-        </div>
-      </section>
-
-      {/* GRID DOCUMENTOS */}
-      <section className="mx-auto max-w-6xl px-6 pb-16">
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {items.map((doc) => (
-            <motion.div
-              key={doc.id}
-              variants={item}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="group rounded-2xl border border-border/60 p-5 bg-background hover:shadow-xl transition"
-            >
-              <div className="flex items-center gap-3">
-                <FileText className="h-6 w-6 text-primary" />
-                <span className="text-xs text-muted-foreground">
-                  {doc.format}
-                </span>
-              </div>
-
-              <h3 className="mt-4 text-lg font-semibold">
-                {doc.title}
-              </h3>
-
-              <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                {doc.description}
+      <section className="section-shell pb-10 pt-8">
+        <section className="glass-panel overflow-hidden rounded-[2rem] p-6 md:p-8">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_320px]">
+            <div>
+              <p className="eyebrow">Documentos Academicos</p>
+              <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
+                Guias, talleres y material de apoyo filtrado por asignatura.
+              </h1>
+              <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
+                Esta vista muestra los PDFs clasificados como documento academico. Los estudiantes solo ven los
+                recursos publicados y la profesora puede administrarlos desde el mismo card cuando tiene sesion activa.
               </p>
+            </div>
 
-              <div className="mt-4 flex justify-between items-center text-xs text-muted-foreground">
-                <span>{doc.subject}</span>
-
-                <button className="text-primary">
-                  Abrir →
-                </button>
+            <div className="rounded-[1.75rem] border border-border/70 bg-slate-950 p-5 text-slate-100">
+              <FileText className="h-5 w-5 text-cyan-200" />
+              <p className="mt-4 text-2xl font-semibold">{catalog.items.length}</p>
+              <p className="mt-2 text-sm text-slate-400">Documentos visibles</p>
+              <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm">
+                Fuente: {catalog.source === "database" ? "PostgreSQL real" : "fallback seed"}
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
+              {teacherSession ? (
+                <div className="mt-3 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary-foreground">
+                  Sesion docente activa para editar, ocultar o eliminar.
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
 
-      {/* ASIGNATURAS */}
-      <section className="mx-auto max-w-5xl px-6 pb-20 text-center">
-        <h2 className="text-2xl font-semibold">
-          Explorar por asignatura
-        </h2>
-
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          {subjects.map((s) => (
-            <Link
-              key={s.slug}
-              href={`/documentos/${s.slug}`}
-              className="rounded-full border border-border px-4 py-2 text-sm hover:bg-muted transition"
-            >
-              {s.title}
-            </Link>
-          ))}
+        <div className="mt-8">
+          <PublicResourceGrid items={catalog.items} kind="documentos" teacherMode={Boolean(teacherSession)} />
         </div>
+
+        <section className="mt-10">
+          <SubjectLinks subjects={subjects} basePath="/documentos" title="Explorar por asignatura" />
+        </section>
       </section>
     </main>
   );

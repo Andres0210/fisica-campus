@@ -1,7 +1,15 @@
 "use client";
 
 type Props = {
-  item: any;
+  item: {
+    id?: string;
+    name: string;
+    role?: string;
+    profession?: string;
+    bio: string;
+    image?: string;
+    avatarUrl?: string | null;
+  };
 };
 
 export default function AuthorCard({ item }: Props) {
@@ -11,7 +19,7 @@ export default function AuthorCard({ item }: Props) {
       {/* IMAGE */}
       <div className="relative w-full aspect-[3/4] overflow-hidden">
         <img
-          src={item.image || "/authors/default.png"}
+          src={item.image || item.avatarUrl || "/authors/default.png"}
           alt={item.name}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
@@ -26,7 +34,7 @@ export default function AuthorCard({ item }: Props) {
           </h3>
 
           <p className="text-xs opacity-80 capitalize">
-            {item.role}
+            {item.role || item.profession}
           </p>
         </div>
       </div>

@@ -1,4 +1,11 @@
-import { RESOURCE_STATUS, RESOURCE_TYPE, ResourceStatus, ResourceType } from "@/lib/campus-domain";
+import {
+  RESOURCE_CATEGORY,
+  RESOURCE_STATUS,
+  RESOURCE_TYPE,
+  ResourceCategory,
+  ResourceStatus,
+  ResourceType,
+} from "@/lib/campus-domain";
 
 export type DashboardCourse = {
   id: string;
@@ -21,6 +28,7 @@ export type DashboardResource = {
   slug: string;
   description: string;
   type: ResourceType;
+  category: ResourceCategory;
   status: ResourceStatus;
   storageUrl: string;
   durationMinutes: number | null;
@@ -63,6 +71,7 @@ const resources: DashboardResource[] = [
     slug: "introduccion-ondas-mecanicas",
     description: "Video introductorio para entender amplitud, frecuencia y longitud de onda.",
     type: RESOURCE_TYPE.VIDEO,
+    category: RESOURCE_CATEGORY.VIDEO,
     status: RESOURCE_STATUS.PUBLISHED,
     storageUrl: "https://example.com/videos/ondas-intro",
     durationMinutes: 18,
@@ -79,6 +88,7 @@ const resources: DashboardResource[] = [
     slug: "guia-pdf-ondas",
     description: "Documento con teoria, ejercicios base y preguntas orientadoras.",
     type: RESOURCE_TYPE.PDF,
+    category: RESOURCE_CATEGORY.DOCUMENT,
     status: RESOURCE_STATUS.PUBLISHED,
     storageUrl: "https://example.com/docs/guia-ondas.pdf",
     durationMinutes: null,
@@ -95,6 +105,7 @@ const resources: DashboardResource[] = [
     slug: "mas-y-energia-potencial",
     description: "Clase en video sobre resorte, periodo y conservacion de energia.",
     type: RESOURCE_TYPE.VIDEO,
+    category: RESOURCE_CATEGORY.VIDEO,
     status: RESOURCE_STATUS.DRAFT,
     storageUrl: "https://example.com/videos/mas-energia",
     durationMinutes: 24,

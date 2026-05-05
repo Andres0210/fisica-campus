@@ -1,79 +1,58 @@
-"use client";
-
 import Navbar from "@/components/Navbar";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { getResourcesByType, subjects } from "@/lib/academic-content";
+import PublicResourceGrid from "@/components/site/PublicResourceGrid";
+import SubjectLinks from "@/components/site/SubjectLinks";
+import { subjects } from "@/lib/academic-content";
+import { getTeacherSession } from "@/lib/auth";
+import { getPublicResourceCatalog } from "@/lib/education-service";
 import { PlayCircle } from "lucide-react";
 
-export default function VideosPage() {
-  const items = getResourcesByType("videos");
+export default async function VideosPage() {
+  const [catalog, teacherSession] = await Promise.all([
+    getPublicResourceCatalog("videos"),
+    getTeacherSession(),
+  ]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />
 
-      {/* HERO */}
-      <section className="px-6 pt-20 pb-14 text-center">
-        <h1 className="text-4xl font-bold md:text-5xl">
-          Videos de física
-        </h1>
-        <p className="mt-5 max-w-2xl mx-auto text-muted-foreground">
-          Refuerza conceptos clave en minutos antes de practicar.
-        </p>
-      </section>
+      <section className="section-shell pb-10 pt-8">
+        <section className="glass-panel overflow-hidden rounded-[2rem] p-6 md:p-8">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_320px]">
+            <div>
+              <p className="eyebrow">Reels De Fisica</p>
+              <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
+                Videos cortos y clases breves organizadas por asignatura y tema.
+              </h1>
+              <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
+                Aqui los estudiantes encuentran los videos publicados por la profesora sin mezclar borradores ni
+                archivos internos. Si la profesora inicia sesion, cada tarjeta tambien muestra acciones de edicion.
+              </p>
+            </div>
 
-      {/* GRID */}
-      <section className="mx-auto max-w-6xl px-6 pb-20">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((video: any, index: number) => (
-            <motion.div
-              key={`${video.id}-${index}`}
-              whileHover={{ y: -5 }}
-              className="group rounded-2xl border border-border/60 overflow-hidden hover:shadow-xl transition"
-            >
-              <div className="h-40 bg-muted flex items-center justify-center">
-                <PlayCircle className="h-10 w-10 text-primary group-hover:scale-110 transition" />
+            <div className="rounded-[1.75rem] border border-border/70 bg-slate-950 p-5 text-slate-100">
+              <PlayCircle className="h-5 w-5 text-cyan-200" />
+              <p className="mt-4 text-2xl font-semibold">{catalog.items.length}</p>
+              <p className="mt-2 text-sm text-slate-400">Videos visibles para estudiantes</p>
+              <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm">
+                Fuente: {catalog.source === "database" ? "PostgreSQL real" : "fallback seed"}
               </div>
+              {teacherSession ? (
+                <div className="mt-3 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary-foreground">
+                  Sesion docente activa: ya puedes editar u ocultar desde esta misma vista.
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
 
-              <div className="p-4">
-                <p className="text-xs text-muted-foreground">
-                  {video.subject}
-                </p>
-
-                <h3 className="mt-2 font-semibold">
-                  {video.title}
-                </h3>
-
-                <Link
-                  href={`/videos/watch/${video.id}`}
-                  className="mt-3 inline-block text-sm text-primary"
-                >
-                  Ver video →
-                </Link>
-              </div>
-            </motion.div>
-          ))}
+        <div className="mt-8">
+          <PublicResourceGrid items={catalog.items} kind="videos" teacherMode={Boolean(teacherSession)} />
         </div>
-      </section>
 
-      {/* ASIGNATURAS */}
-      <section className="pb-20 text-center">
-        <h2 className="text-2xl font-semibold">
-          Ver por asignatura
-        </h2>
-
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          {subjects.map((s) => (
-            <Link
-              key={s.slug}
-              href={`/videos/${s.slug}`}
-              className="rounded-full border border-border px-4 py-2 text-sm hover:bg-muted transition"
-            >
-              {s.title}
-            </Link>
-          ))}
-        </div>
+        <section className="mt-10">
+          <SubjectLinks subjects={subjects} basePath="/videos" title="Ver por asignatura" />
+        </section>
       </section>
     </main>
   );
