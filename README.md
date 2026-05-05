@@ -1,31 +1,44 @@
-# FisicaLab Campus
+# FisicaLab Campus Frontend
 
-Prototipo inicial de una plataforma web para una profesora universitaria de Fisica.
+Frontend `Next.js` de la plataforma academica para recursos, simuladores y panel docente.
 
-## Incluye
+## Stack
 
-- propuesta visual con navbar y sidebar
-- seccion de arquitectura
-- recomendacion de stack tecnologico
-- lineamientos para simulaciones, videos y PDFs
+- `Next.js 15`
+- `React 19`
+- `Tailwind CSS 4`
+- despliegue objetivo: `Vercel`
 
-## Ejecutar
+## Variables de entorno
+
+Usa las variables de [`.env.example`](/C:/Users/ing_a/OneDrive/Documentos/Playground/fisica-campus/.env.example).
+
+Minimo requerido:
+
+```env
+AUTH_SECRET=un-secreto-largo-y-seguro
+TEACHER_NAME=Dra. Laura Mendoza
+TEACHER_EMAIL=laura.mendoza@universidad.edu
+TEACHER_PASSWORD=una-clave-segura
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api
+```
+
+En produccion `NEXT_PUBLIC_API_BASE_URL` debe apuntar al backend desplegado en Google Cloud.
+
+## Desarrollo local
 
 ```bash
 npm install
-npm run db:up
-npx prisma migrate deploy
-npm run prisma:seed
 npm run dev
 ```
 
-## Estructura
+## Build
 
-- `app/`: interfaz principal
-- `components/`: navbar y componentes base
-- `docs/architecture.md`: arquitectura recomendada
-- `prisma/`: esquema, migraciones y seed
+```bash
+npm run build
+npm run start
+```
 
-## Base de datos local
+## Despliegue
 
-El proyecto incluye `docker-compose.yml` para levantar PostgreSQL local en `localhost:5433`.
+La guia de despliegue final esta en [docs/deployment.md](/C:/Users/ing_a/OneDrive/Documentos/Playground/fisica-campus/docs/deployment.md).

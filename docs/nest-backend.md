@@ -1,74 +1,30 @@
-# Backend Nest separado
+# Backend separado
 
-## Estructura
+El backend ya no vive dentro de este proyecto.
 
-- `backend/`: API NestJS independiente.
-- `prisma/schema.prisma`: esquema compartido de base de datos.
-- `lib/api-client.ts`: cliente base del frontend para consumir la API.
+## Ubicacion actual
 
-## Scripts utiles
+- frontend: [fisica-campus](/C:/Users/ing_a/OneDrive/Documentos/Playground/fisica-campus)
+- backend: [fisica-campus-backend](/C:/Users/ing_a/OneDrive/Documentos/Playground/fisica-campus-backend)
 
-Desde la raiz:
+## Integracion
 
-- `npm run backend:dev`
-- `npm run backend:build`
-- `npm run backend:prisma:generate`
+Este frontend consume la API unicamente por HTTP a traves de:
 
-Desde `backend/`:
+- [lib/api-client.ts](/C:/Users/ing_a/OneDrive/Documentos/Playground/fisica-campus/lib/api-client.ts)
 
-- `npm install`
-- `npm run dev`
-- `npm run build`
-- `npm run prisma:generate`
+La URL base se controla con:
 
-## Variables
+- `NEXT_PUBLIC_API_BASE_URL`
 
-Frontend:
+Ejemplo local:
 
-- `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api`
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api
+```
 
-Backend:
+Ejemplo produccion:
 
-- `PORT=4000`
-- `DATABASE_URL=postgresql://postgres:postgres@localhost:5433/fisica_campus?schema=public`
-- `FRONTEND_URL=http://localhost:3000`
-
-## Endpoints principales
-
-- `GET /api/health`
-- `GET /api/authors`
-- `POST /api/authors`
-- `PATCH /api/authors/:id`
-- `DELETE /api/authors/:id`
-- `GET /api/courses`
-- `POST /api/courses`
-- `PATCH /api/courses/:id`
-- `DELETE /api/courses/:id`
-- `GET /api/topics`
-- `POST /api/topics`
-- `PATCH /api/topics/:id`
-- `DELETE /api/topics/:id`
-- `GET /api/resources`
-- `POST /api/resources`
-- `PATCH /api/resources/:id`
-- `DELETE /api/resources/:id`
-- `GET /api/resources/catalog/videos`
-- `GET /api/resources/catalog/documentos`
-- `GET /api/resources/catalog/libros`
-- `GET /api/resources/catalog/cartillas`
-
-## Modelo editorial
-
-- `User`: cuenta interna, por ejemplo la profesora.
-- `Author`: perfil publico del autor.
-- `Resource`: unifica videos, documentos, libros y cartillas.
-
-La separacion se hace con:
-
-- `type`: `VIDEO` o `PDF`
-- `category`: `VIDEO`, `DOCUMENT`, `BOOK`, `BOOKLET`
-- `status`: `DRAFT`, `PUBLISHED`, `ARCHIVED`
-
-## Siguiente paso recomendado
-
-Conectar las vistas del frontend para leer y mutar datos exclusivamente por HTTP hacia Nest, retirando gradualmente el acceso directo a Prisma desde Next.
+```env
+NEXT_PUBLIC_API_BASE_URL=https://tu-backend.run.app/api
+```

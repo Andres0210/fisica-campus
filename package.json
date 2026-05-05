@@ -6,15 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "backend:dev": "npm --prefix backend run dev",
-    "backend:build": "npm --prefix backend run build",
-    "backend:prisma:generate": "npm --prefix backend run prisma:generate",
-    "backend:prisma:migrate": "npm --prefix backend run prisma:migrate",
-    "backend:prisma:deploy": "npm --prefix backend run prisma:deploy",
-    "backend:prisma:seed": "npm --prefix backend run prisma:seed",
     "lint": "next lint",
-    "db:up": "docker compose up -d",
-    "db:down": "docker compose down"
+    "docker:build": "docker build -t fisica-campus-frontend ."
   },
   "dependencies": {
     "framer-motion": "^12.38.0",
