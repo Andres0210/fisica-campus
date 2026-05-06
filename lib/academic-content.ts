@@ -65,6 +65,16 @@ export const subjects: SubjectContent[] = [
         note:
           "Integra Ley de Hooke y M.A.S. en una experiencia completa.",
       },
+      {
+        id: "electric-circuit-losses",
+        title: "Plano electrico animado: cargas y perdidas",
+        summary:
+          "Simulacion de una instalacion electrica con cargas, corriente, campo magnetico y energia perdida.",
+        category: "Circuitos",
+        status: "recomendado",
+        note:
+          "Permite explorar potencia, corriente, perdidas por efecto Joule y distribucion de cargas en un plano electrico.",
+      },
     ],
   },
 
