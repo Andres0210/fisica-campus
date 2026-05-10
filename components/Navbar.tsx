@@ -14,52 +14,76 @@ type NavItem = {
   children?: { label: string; href: string }[];
 };
 
-const navItems: NavItem[] = [
-  { label: "Inicio", href: "/" },
-  {
-    label: "Simuladores",
-    children: [
-      { label: "Todos los simuladores", href: "/simuladores" },
-      { label: "Fisica II", href: "/simuladores/fisica-2" },
-      { label: "Fisica III", href: "/simuladores/fisica-3" },
-    ],
-  },
-  {
-    label: "Reels Fisica",
-    children: [
-      { label: "Todos los videos", href: "/videos" },
-      { label: "Reels Fisica II", href: "/videos/fisica-2" },
-      { label: "Reels Fisica III", href: "/videos/fisica-3" },
-    ],
-  },
-  {
-    label: "Documentos",
-    children: [
-      { label: "Todos los documentos", href: "/documentos" },
-      { label: "Documentos Fisica II", href: "/documentos/fisica-2" },
-      { label: "Documentos Fisica III", href: "/documentos/fisica-3" },
-    ],
-  },
-  {
-    label: "Libros o Cartillas",
-    children: [
-      { label: "Todos los libros", href: "/libros" },
-      { label: "Libros Fisica II", href: "/libros/fisica-2" },
-      { label: "Libros Fisica III", href: "/libros/fisica-3" },
-      { label: "Todas las cartillas", href: "/cartillas" },
-      { label: "Cartillas Fisica II", href: "/cartillas/fisica-2" },
-      { label: "Cartillas Fisica III", href: "/cartillas/fisica-3" },
-    ],
-  },
-  { label: "Autores", href: "/autores" },
-  { label: "Admin", href: "/admin" },
-];
+type DynamicNavigation = {
+  simuladores: NavItem["children"];
+  videos: NavItem["children"];
+  documentos: NavItem["children"];
+  libros: NavItem["children"];
+  cartillas: NavItem["children"];
+};
+
+const emptyDynamicNavigation: DynamicNavigation = {
+  simuladores: [],
+  videos: [],
+  documentos: [],
+  libros: [],
+  cartillas: [],
+};
+
+function buildNavItems(dynamicNavigation: DynamicNavigation): NavItem[] {
+  return [
+    { label: "Inicio", href: "/" },
+    { label: "Feria", href: "/feria" },
+    { label: "Simulaciones", children: dynamicNavigation.simuladores },
+    { label: "Reels Fisica", children: dynamicNavigation.videos },
+    { label: "Documentos", children: dynamicNavigation.documentos },
+    { label: "Libros", children: dynamicNavigation.libros },
+    { label: "Cartillas", children: dynamicNavigation.cartillas },
+    { label: "Autores", href: "/autores" },
+    { label: "Admin", href: "/admin" },
+  ];
+}
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [visible, setVisible] = useState(true);
   const [lastScroll, setLastScroll] = useState(0);
+  const [dynamicNavigation, setDynamicNavigation] = useState<DynamicNavigation>(
+    emptyDynamicNavigation,
+  );
   const pathname = usePathname();
+  const navItems = buildNavItems(dynamicNavigation);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadNavigation() {
+      try {
+        const response = await fetch("/api/navigation", { cache: "no-store" });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = (await response.json()) as Partial<DynamicNavigation>;
+
+        if (!ignore) {
+          setDynamicNavigation({
+            ...emptyDynamicNavigation,
+            ...payload,
+          });
+        }
+      } catch {
+        // Keep the top-level navigation available if the API is temporarily unavailable.
+      }
+    }
+
+    loadNavigation();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   // ocultar navbar al bajar
   useEffect(() => {
@@ -141,9 +165,27 @@ export default function Navbar() {
             {navItems.map((item) => (
               <div key={item.label} className="mb-3">
                 {item.href ? (
-                  <Link href={item.href}>{item.label}</Link>
+                  <Link href={item.href} onClick={() => setIsOpen(false)}>
+                    {item.label}
+                  </Link>
                 ) : (
-                  <p className="font-medium">{item.label}</p>
+                  <>
+                    <p className="font-medium">{item.label}</p>
+                    {item.children?.length ? (
+                      <div className="mt-2 grid gap-1 rounded-[1rem] bg-muted/40 p-2">
+                        {item.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            onClick={() => setIsOpen(false)}
+                            className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-background hover:text-foreground"
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : null}
+                  </>
                 )}
               </div>
             ))}
@@ -165,9 +207,17 @@ type NavLinkProps = {
 
 function NavLink({ item, pathname }: NavLinkProps) {
   const [open, setOpen] = useState(false);
+  const hasChildren = Boolean(item.children?.length);
 
-  const isActive =
-    item.href && (pathname === item.href || pathname.startsWith(item.href));
+  const isDirectActive =
+    item.href &&
+    (item.href === "/"
+      ? pathname === item.href
+      : pathname === item.href || pathname.startsWith(item.href));
+  const isChildActive = item.children?.some(
+    (child) => pathname === child.href || pathname.startsWith(`${child.href}/`),
+  );
+  const isActive = isDirectActive || isChildActive;
 
   return (
     <div
@@ -193,16 +243,28 @@ function NavLink({ item, pathname }: NavLinkProps) {
             )}
           </Link>
         ) : (
-          <span className="flex items-center gap-1 px-2 py-1 text-sm text-muted-foreground hover:text-foreground transition">
+          <span
+            className={`relative flex items-center gap-1 px-2 py-1 text-sm transition ${
+              hasChildren
+                ? "text-muted-foreground hover:text-foreground"
+                : "cursor-default text-muted-foreground/60"
+            }`}
+          >
             {item.label}
-            <ChevronDown className="h-4 w-4" />
+            {hasChildren ? <ChevronDown className="h-4 w-4" /> : null}
+            {isActive && (
+              <motion.span
+                layoutId="underline"
+                className="absolute left-0 -bottom-1 h-[2px] w-full bg-primary rounded"
+              />
+            )}
           </span>
         )}
       </div>
 
       {/* DROPDOWN */}
       <AnimatePresence>
-        {open && item.children && (
+        {open && hasChildren && item.children && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}

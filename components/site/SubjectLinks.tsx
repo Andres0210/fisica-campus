@@ -4,7 +4,7 @@ import Link from "next/link";
 
 type SubjectLinksProps = {
   subjects: SubjectContent[];
-  basePath: "/simuladores" | "/videos" | "/documentos" | "/cartillas";
+  basePath: "/simuladores" | "/videos" | "/documentos" | "/libros" | "/cartillas";
   title: string;
 };
 

@@ -103,6 +103,16 @@
     box-shadow: 0 24px 80px rgba(47, 62, 18, 0.12);
   }
 
+  .editorial-panel {
+    @apply border border-border/60 bg-white/52 backdrop-blur-2xl;
+    box-shadow: 0 28px 120px rgba(39, 58, 17, 0.1);
+  }
+
+  .technical-panel {
+    @apply border border-white/10 bg-[#10170d]/92 text-slate-100;
+    box-shadow: 0 30px 90px rgba(16, 23, 13, 0.28);
+  }
+
   .eyebrow {
     @apply font-mono text-[0.72rem] uppercase tracking-[0.28em] text-primary;
   }

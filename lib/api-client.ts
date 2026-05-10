@@ -1,4 +1,7 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api";
+const API_BASE_URL =
+  process.env.API_BASE_URL ??
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  "http://localhost:4000/api";
 
 type RequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
@@ -92,6 +95,8 @@ export const apiClient = {
 
   getResources: (query?: Record<string, string | number | boolean | undefined | null>) =>
     apiRequest(`/resources${buildQuery(query)}`),
+  getSimulations: (query?: Record<string, string | number | boolean | undefined | null>) =>
+    apiRequest(`/simulations${buildQuery(query)}`),
   getResource: (id: string) =>
     apiRequest(`/resources/${id}`),
   uploadResourceAsset: async (formData: FormData) => {

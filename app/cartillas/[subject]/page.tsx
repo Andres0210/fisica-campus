@@ -19,6 +19,7 @@ export default async function SubjectBookletsPage({ params }: SubjectBookletsPag
     getPublicResourceCatalog("cartillas", subject),
     getTeacherSession(),
   ]);
+  const subjectTitle = catalog.items[0]?.subjectLabel ?? subjectInfo?.title ?? "Asignatura";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -28,10 +29,11 @@ export default async function SubjectBookletsPage({ params }: SubjectBookletsPag
         <section className="glass-panel rounded-[2rem] p-6 md:p-8">
           <p className="eyebrow">Cartillas</p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-            {subjectInfo?.title ?? "Asignatura"} · cartillas del curso
+            {subjectTitle} - cartillas del curso
           </h1>
           <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
-            Material de estudio extendido para acompañar el progreso del estudiante por unidades.
+            Material de estudio extendido para acompanar el progreso del
+            estudiante por unidades.
           </p>
         </section>
 

@@ -19,6 +19,7 @@ export default async function SubjectDocumentsPage({ params }: SubjectDocumentsP
     getPublicResourceCatalog("documentos", subject),
     getTeacherSession(),
   ]);
+  const subjectTitle = catalog.items[0]?.subjectLabel ?? subjectInfo?.title ?? "Asignatura";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -28,10 +29,11 @@ export default async function SubjectDocumentsPage({ params }: SubjectDocumentsP
         <section className="glass-panel rounded-[2rem] p-6 md:p-8">
           <p className="eyebrow">Documentos</p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-            {subjectInfo?.title ?? "Asignatura"} · biblioteca documental
+            {subjectTitle} - biblioteca documental
           </h1>
           <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
-            Guia de lectura, talleres y anexos del curso organizados en una sola ruta publica.
+            Guia de lectura, talleres y anexos del curso organizados en una sola
+            ruta publica.
           </p>
         </section>
 

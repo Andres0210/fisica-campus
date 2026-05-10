@@ -19,6 +19,7 @@ export default async function SubjectVideosPage({ params }: SubjectVideosPagePro
     getPublicResourceCatalog("videos", subject),
     getTeacherSession(),
   ]);
+  const subjectTitle = catalog.items[0]?.subjectLabel ?? subjectInfo?.title ?? "Asignatura";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -28,11 +29,12 @@ export default async function SubjectVideosPage({ params }: SubjectVideosPagePro
         <section className="glass-panel rounded-[2rem] p-6 md:p-8">
           <p className="eyebrow">Reels De Fisica</p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-            {subjectInfo?.title ?? "Asignatura"} · videos publicados
+            {subjectTitle} - videos publicados
           </h1>
           <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
-            Vista filtrada por asignatura para que el estudiante encuentre unicamente los videos publicados en ese
-            curso y la profesora pueda revisarlos en contexto cuando inicia sesion.
+            Vista filtrada por asignatura para que el estudiante encuentre
+            unicamente los videos publicados en ese curso y la profesora pueda
+            revisarlos en contexto cuando inicia sesion.
           </p>
         </section>
 
