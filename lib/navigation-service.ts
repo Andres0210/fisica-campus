@@ -31,14 +31,6 @@ type ApiResource = {
   course: CourseRef;
 };
 
-type ApiSimulation = {
-  id: string;
-  isPublished: boolean;
-  topic: {
-    course: CourseRef;
-  };
-};
-
 const emptyNavigation: PublicNavigation = {
   simuladores: [],
   videos: [],
@@ -90,16 +82,6 @@ function resourcesByKind(
     labelPrefix,
     hrefBase,
   );
-}
-
-function getFallbackSimulationChildren() {
-  return subjects
-    .filter((subject) => subject.simulators.length > 0)
-    .map((subject) => ({
-      label: `Simuladores de ${subject.title}`,
-      href: `/simuladores/${subject.slug}`,
-    }))
-    .sort(byCourseTitle);
 }
 
 function getFallbackResourceChildren(kind: "videos" | "documentos" | "cartillas") {
@@ -161,20 +143,6 @@ export async function getPublicNavigation(): Promise<PublicNavigation> {
     nextNavigation.videos = getFallbackResourceChildren("videos");
     nextNavigation.documentos = getFallbackResourceChildren("documentos");
     nextNavigation.cartillas = getFallbackResourceChildren("cartillas");
-  }
-
-  try {
-    const simulations = (await apiClient.getSimulations({ publishedOnly: true })) as ApiSimulation[];
-
-    nextNavigation.simuladores = uniqueCourseChildren(
-      simulations
-        .filter((simulation) => simulation.isPublished)
-        .map((simulation) => simulation.topic.course),
-      "Simuladores de",
-      "/simuladores",
-    );
-  } catch {
-    nextNavigation.simuladores = getFallbackSimulationChildren();
   }
 
   return nextNavigation;

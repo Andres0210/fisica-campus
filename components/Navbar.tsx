@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "./ThemeToggle";
+import { subjects } from "@/lib/academic-content";
 
 type NavItem = {
   label: string;
@@ -30,16 +31,24 @@ const emptyDynamicNavigation: DynamicNavigation = {
   cartillas: [],
 };
 
+const simulatorNavigation = subjects.flatMap((subject) =>
+  subject.simulators.map((simulator) => ({
+    label: simulator.title,
+    href: `/simuladores/watch/${simulator.id}`,
+  })),
+);
+
 function buildNavItems(dynamicNavigation: DynamicNavigation): NavItem[] {
   return [
     { label: "Inicio", href: "/" },
     { label: "Feria", href: "/feria" },
-    { label: "Simulaciones", children: dynamicNavigation.simuladores },
+    { label: "Simuladores", children: simulatorNavigation },
     { label: "Reels Fisica", children: dynamicNavigation.videos },
     { label: "Documentos", children: dynamicNavigation.documentos },
     { label: "Libros", children: dynamicNavigation.libros },
     { label: "Cartillas", children: dynamicNavigation.cartillas },
     { label: "Autores", href: "/autores" },
+    { label: "Registro", href: "/registro" },
     { label: "Admin", href: "/admin" },
   ];
 }
