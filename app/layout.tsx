@@ -16,9 +16,21 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FisicaLab Campus",
+  title: {
+    default: "Fisica Interactiva Areandina",
+    template: "%s | Fisica Interactiva",
+  },
   description:
-    "Propuesta de plataforma web para una profesora universitaria de Fisica con simulaciones, videos y documentos.",
+    "Plataforma academica de Areandina para explorar materias, simuladores, videos, documentos, libros y cartillas.",
+  openGraph: {
+    title: "Fisica Interactiva Areandina",
+    description:
+      "Recursos academicos, simuladores y biblioteca digital para estudiantes.",
+    url: "https://fisicainteractiva.online",
+    siteName: "Fisica Interactiva",
+    locale: "es_CO",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -29,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           {children}
           <SiteFooter />
         </ThemeProvider>

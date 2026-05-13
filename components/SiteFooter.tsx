@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const footerLinks = [
   { label: "Inicio", href: "/" },
@@ -11,6 +14,12 @@ const footerLinks = [
 ];
 
 export default function SiteFooter() {
+  const pathname = usePathname();
+
+  if (pathname.startsWith("/admin") || pathname.startsWith("/feria")) {
+    return null;
+  }
+
   return (
     <footer className="mt-20 border-t border-border/70 bg-black text-white">
       <div className="section-shell grid gap-10 py-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">

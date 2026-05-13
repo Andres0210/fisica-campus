@@ -1,5 +1,4 @@
 import { apiClient } from "@/lib/api-client";
-import { getCampusDashboardSeedData } from "@/lib/campus-data";
 
 export type StudentCourseCard = {
   id: string;
@@ -98,65 +97,13 @@ type ApiResource = {
   };
 };
 
-async function getStudentSeedDashboard() {
-  const seed = await getCampusDashboardSeedData();
-
-  const courses: StudentCourseCard[] = seed.courses.map((course) => {
-    const courseResources = seed.resources.filter((resource) => resource.courseId === course.id);
-
-    return {
-      id: course.id,
-      slug: course.slug,
-      title: course.title,
-      description: course.description,
-      level: course.level,
-      topicCount: course.totalTopics,
-      resourceCount: courseResources.length,
-      publishedCount: courseResources.filter((resource) => resource.status === "PUBLISHED").length,
-    };
-  });
-
-  const topics: StudentTopicCard[] = seed.topics.map((topic) => {
-    const topicResources = seed.resources.filter((resource) => resource.topicId === topic.id);
-    const course = seed.courses.find((item) => item.id === topic.courseId);
-
-    return {
-      id: topic.id,
-      title: topic.title,
-      description: `Unidad enfocada en ${topic.title.toLowerCase()} y sus aplicaciones.`,
-      position: 1,
-      courseId: topic.courseId,
-      courseSlug: course?.slug ?? "",
-      courseTitle: course?.title ?? "",
-      videoCount: topicResources.filter((resource) => resource.type === "VIDEO").length,
-      pdfCount: topicResources.filter((resource) => resource.type === "PDF").length,
-    };
-  });
-
-  const resources: StudentResourceCard[] = seed.resources
-    .filter((resource) => resource.status === "PUBLISHED")
-    .map((resource) => ({
-      id: resource.id,
-      title: resource.title,
-      description: resource.description,
-      type: resource.type,
-      status: resource.status,
-      topicTitle: resource.topicTitle,
-      courseTitle: resource.courseTitle,
-      publishedAt: resource.publishedAt,
-      durationMinutes: resource.durationMinutes,
-      fileSizeMb: resource.fileSizeMb,
-      storageUrl: resource.storageUrl,
-    }));
-
-  const simulations: StudentSimulationCard[] = [];
-
+function getUnavailableStudentDashboard() {
   return {
-    source: "seed" as const,
-    courses,
-    topics,
-    resources,
-    simulations,
+    source: "unavailable" as const,
+    courses: [] as StudentCourseCard[],
+    topics: [] as StudentTopicCard[],
+    resources: [] as StudentResourceCard[],
+    simulations: [] as StudentSimulationCard[],
   };
 }
 
@@ -171,7 +118,7 @@ export async function getStudentDashboardData() {
     const publishedCourses = courses.filter((course) => course.isPublished);
 
     if (publishedCourses.length === 0) {
-      return getStudentSeedDashboard();
+      return getUnavailableStudentDashboard();
     }
 
     return {
@@ -223,7 +170,7 @@ export async function getStudentDashboardData() {
       simulations: [] as StudentSimulationCard[],
     };
   } catch {
-    return getStudentSeedDashboard();
+    return getUnavailableStudentDashboard();
   }
 }
 
@@ -280,48 +227,6 @@ export async function getStudentCourseDetail(courseSlug: string) {
       })),
     };
   } catch {
-    const seed = await getStudentSeedDashboard();
-    const course = seed.courses.find((item) => item.slug === courseSlug);
-
-    if (!course) {
-      return null;
-    }
-
-    return {
-      source: "seed" as const,
-      course: {
-        id: course.id,
-        slug: course.slug,
-        title: course.title,
-        description: course.description,
-        level: course.level,
-      },
-      topics: seed.topics
-        .filter((topic) => topic.courseSlug === courseSlug)
-        .map((topic) => ({
-          id: topic.id,
-          title: topic.title,
-          description: topic.description,
-          position: topic.position,
-          resources: seed.resources
-            .filter((resource) => resource.topicTitle === topic.title)
-            .map((resource) => ({
-              id: resource.id,
-              title: resource.title,
-              description: resource.description,
-              type: resource.type,
-              publishedAt: resource.publishedAt,
-              durationMinutes: resource.durationMinutes,
-              fileSizeMb: resource.fileSizeMb,
-              storageUrl: resource.storageUrl,
-            })),
-          simulations: [] as Array<{
-            id: string;
-            title: string;
-            description: string;
-            isPublished: boolean;
-          }>,
-        })),
-    };
+    return null;
   }
 }

@@ -281,7 +281,7 @@ function NavLink({ item, pathname }: NavLinkProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
             transition={{ duration: 0.2 }}
-            className="absolute left-0 mt-3 w-56 rounded-xl border border-border bg-background shadow-xl p-3"
+            className="absolute left-0 mt-3 max-h-[70vh] w-72 overflow-y-auto rounded-xl border border-border bg-background p-3 shadow-xl"
           >
             {item.children.map((child) => (
               <Link

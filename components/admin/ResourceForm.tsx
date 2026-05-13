@@ -8,7 +8,6 @@ import {
   resourceCategoryLabels,
   resourceStatusOptions,
 } from "@/lib/education-service";
-import { apiClient } from "@/lib/api-client";
 import { RESOURCE_CATEGORY, RESOURCE_TYPE, type ResourceCategory, type ResourceType } from "@/lib/campus-domain";
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 
@@ -190,7 +189,17 @@ export default function ResourceForm({
           const formData = new FormData();
           formData.set("file", file);
           formData.set("folder", "academic-resources");
-          return apiClient.uploadResourceAsset(formData) as Promise<{
+          const response = await fetch("/api/admin/resources/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+            throw new Error(payload?.message ?? "No se pudo subir el archivo.");
+          }
+
+          return response.json() as Promise<{
             bucket: string;
             path: string;
             publicUrl: string;

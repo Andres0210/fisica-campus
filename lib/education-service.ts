@@ -1,6 +1,4 @@
-import { authors as academicAuthors } from "@/lib/academic-content";
 import { apiClient } from "@/lib/api-client";
-import { getCampusDashboardSeedData } from "@/lib/campus-data";
 import {
   COURSE_LEVEL,
   RESOURCE_CATEGORY,
@@ -241,16 +239,6 @@ function getResourceKind(resource: Pick<ApiResource, "type" | "category">): Reso
   return "documentos";
 }
 
-function normalizeSlug(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 function mapCourse(course: ApiCourse): AdminCourseRecord {
   return {
     id: course.id,
@@ -409,33 +397,11 @@ export async function getAdminEducationDashboard() {
       authors: authors.map(mapAuthor),
     };
   } catch {
-    const seed = await getCampusDashboardSeedData();
-
     return {
-      source: "seed" as const,
-      courses: seed.courses.map((course) => ({
-        ...course,
-        level: course.level as CourseLevel,
-        isPublished: true,
-        totalResources: seed.resources.filter((resource) => resource.courseId === course.id).length,
-      })),
-      topics: seed.topics.map((topic) => ({
-        ...topic,
-        slug: normalizeSlug(topic.title),
-        description: `Unidad enfocada en ${topic.title.toLowerCase()}.`,
-        position: 1,
-        courseTitle: seed.courses.find((course) => course.id === topic.courseId)?.title ?? "",
-        totalResources: seed.resources.filter((resource) => resource.topicId === topic.id).length,
-      })),
-      resources: seed.resources.map((resource) => ({
-        ...resource,
-        category: resource.category ?? (resource.type === RESOURCE_TYPE.VIDEO ? RESOURCE_CATEGORY.VIDEO : RESOURCE_CATEGORY.DOCUMENT),
-        storageBucket: null,
-        storagePath: null,
-        originalFileName: null,
-        mimeType: null,
-        thumbnailUrl: null,
-      })),
+      source: "unavailable" as const,
+      courses: [],
+      topics: [],
+      resources: [],
       authors: [],
     };
   }
@@ -451,16 +417,8 @@ export async function getAuthorsCatalog() {
     };
   } catch {
     return {
-      source: "seed" as const,
-      authors: academicAuthors.map((author) => ({
-        id: author.id,
-        name: author.name,
-        slug: normalizeSlug(author.name),
-        profession: author.role,
-        bio: author.bio,
-        avatarUrl: author.image ?? null,
-        totalResources: 0,
-      })),
+      source: "unavailable" as const,
+      authors: [],
     };
   }
 }

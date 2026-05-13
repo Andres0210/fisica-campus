@@ -3,6 +3,22 @@ const API_BASE_URL =
     ? process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api"
     : process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api";
 
+if (process.env.NODE_ENV === "production" && API_BASE_URL.includes("localhost")) {
+  throw new Error("Configura API_BASE_URL y NEXT_PUBLIC_API_BASE_URL para produccion.");
+}
+
+function getServerAdminHeaders() {
+  const token = process.env.ADMIN_API_TOKEN;
+
+  if (typeof window !== "undefined" || !token) {
+    return {};
+  }
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 type RequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
 };
@@ -35,6 +51,7 @@ async function apiRequest<T>(path: string, init?: RequestOptions): Promise<T> {
     ...init,
     headers: {
       ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      ...getServerAdminHeaders(),
       ...(init?.headers ?? {}),
     },
     body: init?.body ? JSON.stringify(init.body) : undefined,
@@ -109,6 +126,9 @@ export const apiClient = {
   uploadResourceAsset: async (formData: FormData) => {
     const response = await fetch(buildUrl("/resources/upload"), {
       method: "POST",
+      headers: {
+        ...getServerAdminHeaders(),
+      },
       body: formData,
       cache: "no-store",
     });

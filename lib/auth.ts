@@ -24,7 +24,13 @@ type AdminAuthResponse = {
 };
 
 function getAuthSecret() {
-  return process.env.AUTH_SECRET ?? "fisica-campus-dev-secret";
+  const secret = process.env.AUTH_SECRET;
+
+  if (process.env.NODE_ENV === "production" && !secret) {
+    throw new Error("AUTH_SECRET es obligatorio en produccion.");
+  }
+
+  return secret ?? "fisica-campus-dev-secret";
 }
 
 function signPayload(payload: string) {
@@ -73,6 +79,13 @@ function decodeSession(token: string | undefined) {
 }
 
 export function getTeacherCredentials() {
+  if (
+    process.env.NODE_ENV === "production" &&
+    (!process.env.TEACHER_EMAIL || !process.env.TEACHER_PASSWORD || !process.env.TEACHER_NAME)
+  ) {
+    throw new Error("TEACHER_EMAIL, TEACHER_PASSWORD y TEACHER_NAME son obligatorios en produccion.");
+  }
+
   return {
     email: process.env.TEACHER_EMAIL ?? DEFAULT_TEACHER_EMAIL,
     password: process.env.TEACHER_PASSWORD ?? DEFAULT_TEACHER_PASSWORD,

@@ -32,28 +32,32 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-[#f5f7ef] text-foreground dark:bg-background">
       <Suspense fallback={null}>
         <AdminFeedback />
       </Suspense>
-      
-      {/* SIDEBAR */}
-      <aside className="w-64 border-r p-6 flex flex-col justify-between">
-        <div>
-          <h2 className="text-lg font-semibold mb-6">Admin Panel</h2>
 
-          <nav className="space-y-2">
+      <aside className="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-background/92 px-4 py-3 backdrop-blur-xl lg:inset-y-0 lg:left-0 lg:right-auto lg:w-72 lg:border-b-0 lg:border-r lg:p-6">
+        <div>
+          <div className="mb-0 flex items-center justify-between gap-3 lg:mb-8">
+            <div>
+              <p className="eyebrow">Panel</p>
+              <h2 className="text-lg font-semibold">Administracion</h2>
+            </div>
+          </div>
+
+          <nav className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:mt-0 lg:grid lg:gap-2 lg:overflow-visible lg:pb-0">
             {navItems.map(({ href, label, icon: Icon }) => {
-              const active = pathname === href;
+              const active = pathname === href || (href !== "/admin" && pathname.startsWith(href));
 
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${
+                  className={`flex shrink-0 items-center gap-3 rounded-full px-4 py-2.5 text-sm transition lg:rounded-2xl ${
                     active
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
+                      ? "bg-primary text-primary-foreground shadow-[0_14px_34px_rgba(127,181,54,0.22)]"
+                      : "border border-border/60 bg-background/60 text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -64,16 +68,17 @@ export default function AdminLayout({
           </nav>
         </div>
 
-        <form action={logoutTeacherAction}>
-          <button className="flex items-center gap-2 text-sm border px-3 py-2 rounded-lg w-full">
+        <form action={logoutTeacherAction} className="mt-4 hidden lg:block">
+          <button className="flex w-full items-center gap-2 rounded-2xl border border-border/70 px-4 py-3 text-sm text-muted-foreground transition hover:text-foreground">
             <LogOut className="h-4 w-4" />
-            Cerrar sesión
+            Cerrar sesion
           </button>
         </form>
       </aside>
 
-      {/* CONTENIDO */}
-      <main className="flex-1 p-8">{children}</main>
+      <main className="px-4 pb-10 pt-32 lg:ml-72 lg:p-8">
+        <div className="mx-auto max-w-7xl">{children}</div>
+      </main>
     </div>
   );
 }
