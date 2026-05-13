@@ -16,6 +16,7 @@ type NavItem = {
 };
 
 type DynamicNavigation = {
+  materias: NavItem["children"];
   simuladores: NavItem["children"];
   videos: NavItem["children"];
   documentos: NavItem["children"];
@@ -24,6 +25,7 @@ type DynamicNavigation = {
 };
 
 const emptyDynamicNavigation: DynamicNavigation = {
+  materias: [],
   simuladores: [],
   videos: [],
   documentos: [],
@@ -42,13 +44,13 @@ function buildNavItems(dynamicNavigation: DynamicNavigation): NavItem[] {
   return [
     { label: "Inicio", href: "/" },
     { label: "Feria", href: "/feria" },
+    { label: "Materias", children: dynamicNavigation.materias },
     { label: "Simuladores", children: simulatorNavigation },
     { label: "Reels Fisica", children: dynamicNavigation.videos },
     { label: "Documentos", children: dynamicNavigation.documentos },
     { label: "Libros", children: dynamicNavigation.libros },
     { label: "Cartillas", children: dynamicNavigation.cartillas },
     { label: "Autores", href: "/autores" },
-    { label: "Registro", href: "/registro" },
     { label: "Admin", href: "/admin" },
   ];
 }

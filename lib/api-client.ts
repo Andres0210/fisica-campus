@@ -64,6 +64,10 @@ async function apiRequest<T>(path: string, init?: RequestOptions): Promise<T> {
 export const apiClient = {
   createUser: (body: unknown) =>
     apiRequest("/users", { method: "POST", body }),
+  getUsers: () =>
+    apiRequest("/users"),
+  authenticateUser: (body: unknown) =>
+    apiRequest("/users/authenticate", { method: "POST", body }),
 
   getAuthors: (query?: { search?: string }) =>
     apiRequest(`/authors${buildQuery(query)}`),

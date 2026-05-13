@@ -1,4 +1,5 @@
 import { deleteTopicAction, saveTopicAction } from "@/app/admin/actions";
+import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import { AdminCourseRecord, AdminTopicRecord } from "@/lib/education-service";
 import { Network } from "lucide-react";
 
@@ -130,12 +131,12 @@ export default function TopicManager({ courses, topics, editingTopic }: TopicMan
                 </a>
                 <form action={deleteTopicAction}>
                   <input type="hidden" name="topicId" value={topic.id} />
-                  <button
-                    type="submit"
+                  <ConfirmSubmitButton
+                    label="Eliminar"
+                    title="Eliminar tema"
+                    message={`Estas a punto de eliminar "${topic.title}". Los recursos asociados a este tema tambien pueden verse afectados.`}
                     className="rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200"
-                  >
-                    Eliminar
-                  </button>
+                  />
                 </form>
               </div>
             </div>

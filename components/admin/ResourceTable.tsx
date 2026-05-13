@@ -1,4 +1,5 @@
 import { deleteResourceAction, updateResourceStatusAction } from "@/app/admin/actions";
+import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import {
   AdminResourceRecord,
   resourceCategoryLabels,
@@ -114,12 +115,12 @@ export default function ResourceTable({ resources }: ResourceTableProps) {
 
                       <form action={deleteResourceAction}>
                         <input type="hidden" name="resourceId" value={resource.id} />
-                        <button
-                          type="submit"
+                        <ConfirmSubmitButton
+                          label="Eliminar"
+                          title="Eliminar recurso"
+                          message={`Estas a punto de eliminar "${resource.title}". Si fue subido a almacenamiento, tambien intentaremos retirar el archivo asociado.`}
                           className="w-full rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200"
-                        >
-                          Eliminar
-                        </button>
+                        />
                       </form>
                     </div>
                   </td>

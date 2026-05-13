@@ -1,4 +1,4 @@
-import { authors as academicAuthors, getResourcesByType } from "@/lib/academic-content";
+import { authors as academicAuthors } from "@/lib/academic-content";
 import { apiClient } from "@/lib/api-client";
 import { getCampusDashboardSeedData } from "@/lib/campus-data";
 import {
@@ -131,6 +131,19 @@ export type PublicResourceRecord = {
   subjectLabel: string;
 };
 
+export type PublicCourseSummary = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  totalTopics: number;
+  totalResources: number;
+  totalVideos: number;
+  totalDocuments: number;
+  totalBooks: number;
+  totalBooklets: number;
+};
+
 export const courseLevelOptions = Object.values(COURSE_LEVEL);
 export const resourceTypeOptions = Object.values(RESOURCE_TYPE);
 export const resourceCategoryOptions = Object.values(RESOURCE_CATEGORY);
@@ -212,6 +225,22 @@ type ApiResource = {
   mimeType?: string | null;
 };
 
+function getResourceKind(resource: Pick<ApiResource, "type" | "category">): ResourceCollectionKind {
+  if (resource.type === RESOURCE_TYPE.VIDEO) {
+    return "videos";
+  }
+
+  if (resource.category === RESOURCE_CATEGORY.BOOK) {
+    return "libros";
+  }
+
+  if (resource.category === RESOURCE_CATEGORY.BOOKLET) {
+    return "cartillas";
+  }
+
+  return "documentos";
+}
+
 function normalizeSlug(value: string) {
   return value
     .normalize("NFD")
@@ -220,35 +249,6 @@ function normalizeSlug(value: string) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-}
-
-function inferSubjectSlug(courseSlug: string, courseTitle: string) {
-  const haystack = `${courseSlug} ${courseTitle}`
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-
-  if (/\b(fisica|fisica general)?[\s-]*(iii|3)\b/.test(haystack)) {
-    return "fisica-3";
-  }
-
-  if (/\b(fisica|fisica general)?[\s-]*(ii|2)\b/.test(haystack)) {
-    return "fisica-2";
-  }
-
-  return courseSlug;
-}
-
-function inferSubjectLabel(subjectSlug: string, fallbackTitle: string) {
-  if (subjectSlug === "fisica-2") {
-    return "Fisica II";
-  }
-
-  if (subjectSlug === "fisica-3") {
-    return "Fisica III";
-  }
-
-  return fallbackTitle;
 }
 
 function mapCourse(course: ApiCourse): AdminCourseRecord {
@@ -315,8 +315,6 @@ function mapAuthor(author: ApiAuthor): AdminAuthorRecord {
 }
 
 function mapPublicResource(resource: ApiResource): PublicResourceRecord {
-  const subjectSlug = inferSubjectSlug(resource.course.slug, resource.course.title);
-
   return {
     id: resource.id,
     slug: resource.slug,
@@ -332,46 +330,66 @@ function mapPublicResource(resource: ApiResource): PublicResourceRecord {
     courseTitle: resource.course.title,
     courseSlug: resource.course.slug,
     topicTitle: resource.topic.title,
-    subjectSlug,
-    subjectLabel: inferSubjectLabel(subjectSlug, resource.course.title),
+    subjectSlug: resource.course.slug,
+    subjectLabel: resource.course.title,
   };
 }
 
-function getFallbackCollection(kind: ResourceCollectionKind, subjectSlug?: string): PublicResourceRecord[] {
-  const items =
-    kind === "videos"
-      ? getResourcesByType("videos", subjectSlug as never)
-      : kind === "documentos"
-        ? getResourcesByType("documentos", subjectSlug as never)
-        : kind === "cartillas"
-          ? getResourcesByType("cartillas", subjectSlug as never)
-          : [];
+export async function getPublicCourseSummaries(): Promise<PublicCourseSummary[]> {
+  try {
+    const [courses, resources] = await Promise.all([
+      apiClient.getCourses() as Promise<ApiCourse[]>,
+      apiClient.getResources({ publishedOnly: true }) as Promise<ApiResource[]>,
+    ]);
 
-  return items.map((item) => ({
-    id: item.id,
-    slug: normalizeSlug(item.title),
-    title: item.title,
-    description: item.description,
-    type: kind === "videos" ? RESOURCE_TYPE.VIDEO : RESOURCE_TYPE.PDF,
-    category:
-      kind === "videos"
-        ? RESOURCE_CATEGORY.VIDEO
-        : kind === "cartillas"
-          ? RESOURCE_CATEGORY.BOOKLET
-          : kind === "libros"
-            ? RESOURCE_CATEGORY.BOOK
-            : RESOURCE_CATEGORY.DOCUMENT,
-    storageUrl: item.url ?? item.pdf ?? item.file ?? "#",
-    thumbnailUrl: null,
-    durationMinutes: kind === "videos" ? 1 : null,
-    fileSizeMb: kind === "videos" ? null : 1,
-    publishedAt: null,
-    courseTitle: inferSubjectLabel(item.subject, item.subject),
-    courseSlug: item.subject,
-    topicTitle: item.tags?.[0] ?? "General",
-    subjectSlug: item.subject,
-    subjectLabel: inferSubjectLabel(item.subject, item.subject),
-  }));
+    return courses
+      .filter((course) => course.isPublished !== false)
+      .map((course) => {
+        const courseResources = resources.filter((resource) => resource.courseId === course.id);
+
+        return {
+          id: course.id,
+          title: course.title,
+          slug: course.slug,
+          description: course.description,
+          totalTopics: course._count?.topics ?? 0,
+          totalResources: courseResources.length,
+          totalVideos: courseResources.filter((resource) => getResourceKind(resource) === "videos").length,
+          totalDocuments: courseResources.filter((resource) => getResourceKind(resource) === "documentos").length,
+          totalBooks: courseResources.filter((resource) => getResourceKind(resource) === "libros").length,
+          totalBooklets: courseResources.filter((resource) => getResourceKind(resource) === "cartillas").length,
+        };
+      })
+      .sort((a, b) => a.title.localeCompare(b.title, "es", { sensitivity: "base" }));
+  } catch {
+    return [];
+  }
+}
+
+export function getCourseResourceCount(course: PublicCourseSummary, kind: ResourceCollectionKind) {
+  if (kind === "videos") {
+    return course.totalVideos;
+  }
+
+  if (kind === "documentos") {
+    return course.totalDocuments;
+  }
+
+  if (kind === "libros") {
+    return course.totalBooks;
+  }
+
+  return course.totalBooklets;
+}
+
+export async function getPublicCourseLinks(kind?: ResourceCollectionKind) {
+  const courses = await getPublicCourseSummaries();
+
+  if (!kind) {
+    return courses;
+  }
+
+  return courses.filter((course) => getCourseResourceCount(course, kind) > 0);
 }
 
 export async function getAdminEducationDashboard() {
@@ -509,8 +527,8 @@ export async function getPublicResourceCatalog(kind: ResourceCollectionKind, sub
     };
   } catch {
     return {
-      source: "seed" as const,
-      items: getFallbackCollection(kind, subjectSlug),
+      source: "unavailable" as const,
+      items: [] as PublicResourceRecord[],
     };
   }
 }

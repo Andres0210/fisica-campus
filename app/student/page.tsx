@@ -6,7 +6,7 @@ import { getStudentDashboardData } from "@/lib/student-dashboard-service";
 import { Atom, BookOpen, PlayCircle, Sparkles, Waves } from "lucide-react";
 
 export default async function StudentPage() {
-  const { courses, topics, resources, simulations, source } = await getStudentDashboardData();
+  const { courses, topics, resources, simulations } = await getStudentDashboardData();
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -41,10 +41,6 @@ export default async function StudentPage() {
                   {item}
                 </div>
               ))}
-            </div>
-
-            <div className="mt-6 rounded-[1.5rem] border border-primary/20 bg-primary/8 p-4 text-sm leading-6 text-muted-foreground">
-              Fuente actual de datos: {source === "database" ? "PostgreSQL real" : "seed de respaldo"}.
             </div>
           </aside>
 

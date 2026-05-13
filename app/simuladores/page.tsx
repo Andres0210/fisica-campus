@@ -20,7 +20,6 @@ function getSimulatorsByCategory() {
   const all = subjects.flatMap((s) =>
     s.simulators.map((sim) => ({
       ...sim,
-      subject: s.title,
     })),
   );
 
@@ -60,10 +59,10 @@ export default function SimulatorsPage() {
             </Link>
 
             <Link
-              href="/simuladores/fisica-2"
+              href="#simuladores"
               className="rounded-full border border-border px-6 py-3"
             >
-              Ver por asignatura
+              Ver todos
             </Link>
           </div>
         </div>
@@ -100,10 +99,10 @@ export default function SimulatorsPage() {
         <h2 className="text-3xl font-semibold">Empieza a explorar la física</h2>
 
         <Link
-          href="/simuladores/fisica-2"
+          href="#simuladores"
           className="mt-8 inline-block rounded-full bg-primary px-8 py-4 text-primary-foreground"
         >
-          Ver asignaturas
+          Ver simuladores
         </Link>
       </section>
     </main>

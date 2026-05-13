@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { apiClient } from "@/lib/api-client";
 
 const SESSION_COOKIE_NAME = "fisica-campus-teacher-session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 12;
@@ -12,8 +13,14 @@ const DEFAULT_TEACHER_NAME = "Dra. Laura Mendoza";
 type TeacherSessionPayload = {
   email: string;
   name: string;
-  role: "TEACHER";
+  role: "TEACHER" | "ASSISTANT";
   expiresAt: number;
+};
+
+type AdminAuthResponse = {
+  email: string;
+  name: string;
+  role: "TEACHER" | "ASSISTANT" | "STUDENT";
 };
 
 function getAuthSecret() {
@@ -73,12 +80,12 @@ export function getTeacherCredentials() {
   };
 }
 
-export async function createTeacherSession() {
+export async function createTeacherSession(admin?: Pick<TeacherSessionPayload, "email" | "name" | "role">) {
   const credentials = getTeacherCredentials();
   const payload: TeacherSessionPayload = {
-    email: credentials.email,
-    name: credentials.name,
-    role: "TEACHER",
+    email: admin?.email ?? credentials.email,
+    name: admin?.name ?? credentials.name,
+    role: admin?.role ?? "TEACHER",
     expiresAt: Date.now() + SESSION_DURATION_MS,
   };
 
@@ -118,9 +125,23 @@ export async function requireTeacherSession() {
 export async function authenticateTeacher(email: string, password: string) {
   const credentials = getTeacherCredentials();
 
-  if (email !== credentials.email || password !== credentials.password) {
-    return null;
+  if (email === credentials.email && password === credentials.password) {
+    return createTeacherSession();
   }
 
-  return createTeacherSession();
+  try {
+    const admin = (await apiClient.authenticateUser({ email, password })) as AdminAuthResponse;
+
+    if (admin.role !== "TEACHER" && admin.role !== "ASSISTANT") {
+      return null;
+    }
+
+    return createTeacherSession({
+      email: admin.email,
+      name: admin.name,
+      role: admin.role,
+    });
+  } catch {
+    return null;
+  }
 }

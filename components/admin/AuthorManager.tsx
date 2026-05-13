@@ -1,14 +1,14 @@
 import { deleteAuthorAction, saveAuthorAction } from "@/app/admin/actions";
+import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import { AdminAuthorRecord } from "@/lib/education-service";
 import { PencilLine, UserRound } from "lucide-react";
 
 type AuthorManagerProps = {
   authors: AdminAuthorRecord[];
   editingAuthor?: AdminAuthorRecord | null;
-  errorMessage?: string;
 };
 
-export default function AuthorManager({ authors, editingAuthor, errorMessage }: AuthorManagerProps) {
+export default function AuthorManager({ authors, editingAuthor }: AuthorManagerProps) {
   return (
     <section className="glass-panel rounded-[2rem] p-6">
       <div className="flex items-center justify-between gap-4">
@@ -22,12 +22,6 @@ export default function AuthorManager({ authors, editingAuthor, errorMessage }: 
           {authors.length} perfiles
         </div>
       </div>
-
-      {errorMessage ? (
-        <div className="mt-6 rounded-[1.25rem] border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-          {errorMessage}
-        </div>
-      ) : null}
 
       <form action={saveAuthorAction} className="mt-6 grid gap-4 md:grid-cols-2">
         <input type="hidden" name="authorId" defaultValue={editingAuthor?.id ?? ""} />
@@ -132,12 +126,12 @@ export default function AuthorManager({ authors, editingAuthor, errorMessage }: 
                   </a>
                   <form action={deleteAuthorAction}>
                     <input type="hidden" name="authorId" value={author.id} />
-                    <button
-                      type="submit"
+                    <ConfirmSubmitButton
+                      label="Eliminar"
+                      title="Eliminar autor"
+                      message={`Estas a punto de eliminar el perfil de "${author.name}". Esta accion no se puede deshacer.`}
                       className="rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200"
-                    >
-                      Eliminar
-                    </button>
+                    />
                   </form>
                 </div>
               </div>

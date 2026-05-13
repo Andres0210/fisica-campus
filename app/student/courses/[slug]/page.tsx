@@ -36,9 +36,6 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                 <span className="rounded-full border border-border/70 px-4 py-2 text-sm text-muted-foreground">
                   Nivel: {data.course.level}
                 </span>
-                <span className="rounded-full border border-border/70 px-4 py-2 text-sm text-muted-foreground">
-                  Fuente: {data.source === "database" ? "PostgreSQL" : "seed"}
-                </span>
               </div>
             </div>
 

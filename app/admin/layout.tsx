@@ -1,7 +1,9 @@
 "use client";
 
+import AdminFeedback from "@/components/admin/AdminFeedback";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -9,6 +11,7 @@ import {
   FileStack,
   LogOut,
   Users,
+  UserCog,
 } from "lucide-react";
 import { logoutTeacherAction } from "@/app/admin/actions";
 
@@ -18,6 +21,7 @@ const navItems = [
   { href: "/admin/topics", label: "Temas", icon: BookOpen },
   { href: "/admin/resources", label: "Recursos", icon: FileStack },
   { href: "/admin/authors", label: "Autores", icon: Users },
+  { href: "/admin/users", label: "Usuarios", icon: UserCog },
 ];
 
 export default function AdminLayout({
@@ -29,6 +33,9 @@ export default function AdminLayout({
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
+      <Suspense fallback={null}>
+        <AdminFeedback />
+      </Suspense>
       
       {/* SIDEBAR */}
       <aside className="w-64 border-r p-6 flex flex-col justify-between">

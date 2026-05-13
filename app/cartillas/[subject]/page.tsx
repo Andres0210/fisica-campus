@@ -1,9 +1,8 @@
 import Navbar from "@/components/Navbar";
 import PublicResourceGrid from "@/components/site/PublicResourceGrid";
 import SubjectLinks from "@/components/site/SubjectLinks";
-import { getSubject, subjects } from "@/lib/academic-content";
 import { getTeacherSession } from "@/lib/auth";
-import { getPublicResourceCatalog } from "@/lib/education-service";
+import { getPublicCourseLinks, getPublicResourceCatalog } from "@/lib/education-service";
 
 type SubjectBookletsPageProps = {
   params: Promise<{
@@ -13,13 +12,13 @@ type SubjectBookletsPageProps = {
 
 export default async function SubjectBookletsPage({ params }: SubjectBookletsPageProps) {
   const { subject } = await params;
-  const subjectInfo = getSubject(subject);
 
-  const [catalog, teacherSession] = await Promise.all([
+  const [catalog, teacherSession, courses] = await Promise.all([
     getPublicResourceCatalog("cartillas", subject),
     getTeacherSession(),
+    getPublicCourseLinks(),
   ]);
-  const subjectTitle = catalog.items[0]?.subjectLabel ?? subjectInfo?.title ?? "Asignatura";
+  const subjectTitle = catalog.items[0]?.subjectLabel ?? courses.find((course) => course.slug === subject)?.title ?? "Asignatura";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -42,7 +41,7 @@ export default async function SubjectBookletsPage({ params }: SubjectBookletsPag
         </div>
 
         <section className="mt-10">
-          <SubjectLinks subjects={subjects} basePath="/cartillas" title="Cambiar de asignatura" />
+          <SubjectLinks courses={courses} basePath="/cartillas" kind="cartillas" title="Cambiar de asignatura" />
         </section>
       </section>
     </main>

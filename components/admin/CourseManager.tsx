@@ -1,4 +1,5 @@
 import { deleteCourseAction, saveCourseAction } from "@/app/admin/actions";
+import ConfirmSubmitButton from "@/components/admin/ConfirmSubmitButton";
 import { AdminCourseRecord, courseLevelOptions } from "@/lib/education-service";
 import { GraduationCap } from "lucide-react";
 
@@ -31,7 +32,7 @@ export default function CourseManager({ courses, editingCourse }: CourseManagerP
             name="title"
             defaultValue={editingCourse?.title ?? ""}
             className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3"
-            placeholder="Ej. Fisica II"
+            placeholder="Ej. Calculo II"
           />
         </label>
 
@@ -41,7 +42,7 @@ export default function CourseManager({ courses, editingCourse }: CourseManagerP
             name="slug"
             defaultValue={editingCourse?.slug ?? ""}
             className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3"
-            placeholder="fisica-2"
+            placeholder="calculo-2"
           />
         </label>
 
@@ -128,12 +129,12 @@ export default function CourseManager({ courses, editingCourse }: CourseManagerP
                 </a>
                 <form action={deleteCourseAction}>
                   <input type="hidden" name="courseId" value={course.id} />
-                  <button
-                    type="submit"
+                  <ConfirmSubmitButton
+                    label="Eliminar"
+                    title="Eliminar asignatura"
+                    message={`Estas a punto de eliminar "${course.title}". Tambien se eliminaran sus temas y recursos asociados. Esta accion no se puede deshacer.`}
                     className="rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200"
-                  >
-                    Eliminar
-                  </button>
+                  />
                 </form>
               </div>
             </div>

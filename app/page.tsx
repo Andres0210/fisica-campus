@@ -1,5 +1,5 @@
 import HomeHeroCarousel from "@/components/HomeHeroCarousel";
-import { authors } from "@/lib/academic-content";
+import { getAuthorsCatalog } from "@/lib/education-service";
 import {
   ArrowRight,
   Atom,
@@ -63,7 +63,9 @@ const libraryAccesses = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const { authors } = await getAuthorsCatalog();
+
   return (
     <main className="bg-[#f7f8f1] text-foreground">
       <HomeHeroCarousel />
@@ -242,7 +244,7 @@ export default function Home() {
               <article key={author.id}>
                 <div className="overflow-hidden rounded-[1.75rem] bg-[#e8eed9]">
                   <img
-                    src={author.image || "/authors/default.png"}
+                    src={author.avatarUrl || "/authors/default.png"}
                     alt={author.name}
                     className="h-[320px] w-full object-cover"
                     loading="lazy"
@@ -250,7 +252,7 @@ export default function Home() {
                 </div>
                 <div className="mt-5">
                   <p className="text-xl font-semibold">{author.name}</p>
-                  <p className="mt-1 text-sm font-medium text-primary">{author.role}</p>
+                  <p className="mt-1 text-sm font-medium text-primary">{author.profession}</p>
                   <p className="mt-3 text-sm leading-7 text-muted-foreground">{author.bio}</p>
                 </div>
               </article>

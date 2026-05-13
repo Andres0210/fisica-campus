@@ -1,4 +1,3 @@
-import { subjects } from "@/lib/academic-content";
 import { apiClient } from "@/lib/api-client";
 import { RESOURCE_CATEGORY, RESOURCE_STATUS, RESOURCE_TYPE } from "@/lib/campus-domain";
 
@@ -8,6 +7,7 @@ export type NavigationChild = {
 };
 
 export type PublicNavigation = {
+  materias: NavigationChild[];
   simuladores: NavigationChild[];
   videos: NavigationChild[];
   documentos: NavigationChild[];
@@ -32,6 +32,7 @@ type ApiResource = {
 };
 
 const emptyNavigation: PublicNavigation = {
+  materias: [],
   simuladores: [],
   videos: [],
   documentos: [],
@@ -84,36 +85,23 @@ function resourcesByKind(
   );
 }
 
-function getFallbackResourceChildren(kind: "videos" | "documentos" | "cartillas") {
-  return subjects
-    .filter((subject) => {
-      if (kind === "videos") {
-        return subject.slug === "fisica-2";
-      }
-
-      if (kind === "documentos" || kind === "cartillas") {
-        return ["fisica-2", "fisica-3"].includes(subject.slug);
-      }
-
-      return false;
-    })
-    .map((subject) => ({
-      label:
-        kind === "videos"
-          ? `Reels de ${subject.title}`
-          : kind === "documentos"
-            ? `Documentos de ${subject.title}`
-            : `Cartillas de ${subject.title}`,
-      href: `/${kind}/${subject.slug}`,
-    }))
-    .sort(byCourseTitle);
-}
-
 export async function getPublicNavigation(): Promise<PublicNavigation> {
   const nextNavigation = { ...emptyNavigation };
 
   try {
-    const resources = (await apiClient.getResources({ publishedOnly: true })) as ApiResource[];
+    const [courses, resources] = await Promise.all([
+      apiClient.getCourses() as Promise<CourseRef[]>,
+      apiClient.getResources({ publishedOnly: true }) as Promise<ApiResource[]>,
+    ]);
+
+    nextNavigation.materias = uniqueCourseChildren(
+      courses,
+      "",
+      "/materias",
+    ).map((course) => ({
+      ...course,
+      label: course.label.trim(),
+    }));
 
     nextNavigation.videos = resourcesByKind(
       resources,
@@ -140,9 +128,7 @@ export async function getPublicNavigation(): Promise<PublicNavigation> {
       "/cartillas",
     );
   } catch {
-    nextNavigation.videos = getFallbackResourceChildren("videos");
-    nextNavigation.documentos = getFallbackResourceChildren("documentos");
-    nextNavigation.cartillas = getFallbackResourceChildren("cartillas");
+    return nextNavigation;
   }
 
   return nextNavigation;

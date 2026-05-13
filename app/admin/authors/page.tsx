@@ -5,7 +5,6 @@ import { getAuthorsCatalog } from "@/lib/education-service";
 type AuthorsPageProps = {
   searchParams?: Promise<{
     author?: string;
-    error?: string;
   }>;
 };
 
@@ -23,7 +22,6 @@ export default async function AuthorsPage({ searchParams }: AuthorsPageProps) {
       <AuthorManager
         authors={authors}
         editingAuthor={editingAuthor}
-        errorMessage={params?.error}
       />
     </div>
   );

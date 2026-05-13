@@ -1,9 +1,8 @@
 import Navbar from "@/components/Navbar";
 import PublicResourceGrid from "@/components/site/PublicResourceGrid";
 import SubjectLinks from "@/components/site/SubjectLinks";
-import { getSubject, subjects } from "@/lib/academic-content";
 import { getTeacherSession } from "@/lib/auth";
-import { getPublicResourceCatalog } from "@/lib/education-service";
+import { getPublicCourseLinks, getPublicResourceCatalog } from "@/lib/education-service";
 
 type SubjectVideosPageProps = {
   params: Promise<{
@@ -13,13 +12,13 @@ type SubjectVideosPageProps = {
 
 export default async function SubjectVideosPage({ params }: SubjectVideosPageProps) {
   const { subject } = await params;
-  const subjectInfo = getSubject(subject);
 
-  const [catalog, teacherSession] = await Promise.all([
+  const [catalog, teacherSession, courses] = await Promise.all([
     getPublicResourceCatalog("videos", subject),
     getTeacherSession(),
+    getPublicCourseLinks(),
   ]);
-  const subjectTitle = catalog.items[0]?.subjectLabel ?? subjectInfo?.title ?? "Asignatura";
+  const subjectTitle = catalog.items[0]?.subjectLabel ?? courses.find((course) => course.slug === subject)?.title ?? "Asignatura";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -43,7 +42,7 @@ export default async function SubjectVideosPage({ params }: SubjectVideosPagePro
         </div>
 
         <section className="mt-10">
-          <SubjectLinks subjects={subjects} basePath="/videos" title="Cambiar de asignatura" />
+          <SubjectLinks courses={courses} basePath="/videos" kind="videos" title="Cambiar de asignatura" />
         </section>
       </section>
     </main>

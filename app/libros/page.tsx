@@ -1,15 +1,15 @@
 import Navbar from "@/components/Navbar";
 import PublicResourceGrid from "@/components/site/PublicResourceGrid";
 import SubjectLinks from "@/components/site/SubjectLinks";
-import { subjects } from "@/lib/academic-content";
 import { getTeacherSession } from "@/lib/auth";
-import { getPublicResourceCatalog } from "@/lib/education-service";
+import { getPublicCourseLinks, getPublicResourceCatalog } from "@/lib/education-service";
 import { LibraryBig } from "lucide-react";
 
 export default async function BooksPage() {
-  const [catalog, teacherSession] = await Promise.all([
+  const [catalog, teacherSession, courses] = await Promise.all([
     getPublicResourceCatalog("libros"),
     getTeacherSession(),
+    getPublicCourseLinks("libros"),
   ]);
 
   return (
@@ -34,9 +34,6 @@ export default async function BooksPage() {
               <LibraryBig className="h-5 w-5 text-cyan-200" />
               <p className="mt-4 text-2xl font-semibold">{catalog.items.length}</p>
               <p className="mt-2 text-sm text-slate-400">Libros visibles</p>
-              <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm">
-                Fuente: {catalog.source === "database" ? "PostgreSQL real" : "fallback seed"}
-              </div>
               {teacherSession ? (
                 <div className="mt-3 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary-foreground">
                   Sesion docente activa para editar, ocultar o eliminar.
@@ -51,7 +48,7 @@ export default async function BooksPage() {
         </div>
 
         <section className="mt-10">
-          <SubjectLinks subjects={subjects} basePath="/libros" title="Explorar libros por asignatura" />
+          <SubjectLinks courses={courses} basePath="/libros" kind="libros" title="Explorar libros por asignatura" />
         </section>
       </section>
     </main>
